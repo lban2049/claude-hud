@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Troubleshooting - claude-hud</title>
+  <meta name="description" content="">
+  <meta property="og:title" content="Troubleshooting">
+  <meta property="og:description" content="">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+  <link rel="stylesheet" href="../../assets/docsmith.css">
+  <link rel="stylesheet" href="../../assets/theme.css">
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github-dark.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js" defer></script>
+  <script src="../../assets/nav.js" defer></script>
+  <script>
+    // Initialize theme from localStorage or system preference
+    (function() {
+      const stored = localStorage.getItem('docsmith-theme');
+      if (stored) {
+        document.documentElement.setAttribute('data-theme', stored);
+      } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      }
+    })();
+
+    function toggleTheme() {
+      const html = document.documentElement;
+      const current = html.getAttribute('data-theme');
+      const next = current === 'dark' ? 'light' : 'dark';
+      html.setAttribute('data-theme', next);
+      localStorage.setItem('docsmith-theme', next);
+    }
+  </script>
+</head>
+<body data-ds-path="/troubleshooting">
+  <header data-ds="header">
+    <a href="/en/index.html" class="site-title">claude-hud</a>
+    <div class="header-controls">
+      
+    <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
+      <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="5"></circle>
+        <line x1="12" y1="1" x2="12" y2="3"></line>
+        <line x1="12" y1="21" x2="12" y2="23"></line>
+        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+        <line x1="1" y1="12" x2="3" y2="12"></line>
+        <line x1="21" y1="12" x2="23" y2="12"></line>
+        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+      </svg>
+      <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+      </svg>
+    </button>
+    </div>
+  </header>
+  <div data-ds="layout">
+    <aside data-ds="sidebar"><!-- nav.js 渲染 --></aside>
+    <main data-ds="content"><h1 id="troubleshooting" tabindex="-1">Troubleshooting <a class="header-anchor" href="#troubleshooting" aria-hidden="true">#</a></h1>
+<p>Fix common issues with Claude HUD installation, display, configuration, and platform-specific quirks. If you run into a problem not covered here, check the <a href="https://github.com/jarrodwatts/claude-hud/issues">GitHub Issues</a> for known bugs and workarounds.</p>
+<p><strong>Prerequisites:</strong> Claude HUD installed and configured. If you haven’t set it up yet, see <a href="getting-started.html">Getting Started</a>.</p>
+<hr>
+<h2 id="installation-issues" tabindex="-1">Installation Issues <a class="header-anchor" href="#installation-issues" aria-hidden="true">#</a></h2>
+<h3 id="linux%3A-exdev%3A-cross-device-link-not-permitted" tabindex="-1">Linux: <code>EXDEV: cross-device link not permitted</code> <a class="header-anchor" href="#linux%3A-exdev%3A-cross-device-link-not-permitted" aria-hidden="true">#</a></h3>
+<p>On Linux, <code>/tmp</code> is often mounted as a separate filesystem (tmpfs). When Claude Code tries to move the plugin from a temp directory to the install location, the cross-device move fails.</p>
+<p><strong>Fix:</strong> Set <code>TMPDIR</code> to a location on the same filesystem before launching Claude Code:</p>
+<pre><code class="language-bash">mkdir -p ~/.cache/tmp &amp;&amp; TMPDIR=~/.cache/tmp claude
+</code></pre>
+<p>Then install the plugin in that session:</p>
+<pre><code>/plugin marketplace add jarrodwatts/claude-hud
+/plugin install claude-hud
+</code></pre>
+<p>This is a <a href="https://github.com/anthropics/claude-code/issues/14799">Claude Code platform limitation</a>, not a Claude HUD bug. You only need the <code>TMPDIR</code> workaround during installation — subsequent sessions work normally.</p>
+<h3 id="plugin-install-fails-or-times-out" tabindex="-1">Plugin Install Fails or Times Out <a class="header-anchor" href="#plugin-install-fails-or-times-out" aria-hidden="true">#</a></h3>
+<p>If <code>/plugin install claude-hud</code> hangs or fails:</p>
+<ol>
+<li><strong>Check your Claude Code version</strong> — Claude HUD requires v1.0.80 or later:<pre><code class="language-bash">claude --version
+</code></pre>
+</li>
+<li><strong>Verify the marketplace is registered:</strong><pre><code>/plugin marketplace list
+</code></pre>
+If <code>jarrodwatts/claude-hud</code> is missing, re-add it:<pre><code>/plugin marketplace add jarrodwatts/claude-hud
+</code></pre>
+</li>
+<li><strong>Check network connectivity</strong> — the install fetches the plugin from GitHub. Proxy or firewall rules may block it.</li>
+<li><strong>Try a clean install</strong> — remove any partial installation and retry:<pre><code>/plugin uninstall claude-hud
+/plugin install claude-hud
+</code></pre>
+</li>
+</ol>
+<hr>
+<h2 id="statusline-not-appearing" tabindex="-1">Statusline Not Appearing <a class="header-anchor" href="#statusline-not-appearing" aria-hidden="true">#</a></h2>
+<p>If the HUD doesn’t show after installation, work through these checks in order.</p>
+<h3 id="step-1%3A-verify-the-plugin-is-installed" tabindex="-1">Step 1: Verify the Plugin Is Installed <a class="header-anchor" href="#step-1%3A-verify-the-plugin-is-installed" aria-hidden="true">#</a></h3>
+<pre><code>/plugin list
+</code></pre>
+<p>You should see <code>claude-hud</code> in the output. If not, go back to <a href="getting-started.html">Getting Started</a> and install it.</p>
+<h3 id="step-2%3A-run-setup" tabindex="-1">Step 2: Run Setup <a class="header-anchor" href="#step-2%3A-run-setup" aria-hidden="true">#</a></h3>
+<p>The statusline needs a configuration entry in <code>~/.claude/settings.json</code>. Run:</p>
+<pre><code>/claude-hud:setup
+</code></pre>
+<p>This registers the statusline command so Claude Code invokes the HUD on every render cycle.</p>
+<h3 id="step-3%3A-check-claude-code-version" tabindex="-1">Step 3: Check Claude Code Version <a class="header-anchor" href="#step-3%3A-check-claude-code-version" aria-hidden="true">#</a></h3>
+<p>Claude HUD uses the statusline plugin API introduced in Claude Code v1.0.80. Older versions silently ignore the configuration.</p>
+<pre><code class="language-bash">claude --version
+</code></pre>
+<p>If your version is below 1.0.80, update Claude Code first.</p>
+<h3 id="step-4%3A-check-for-errors" tabindex="-1">Step 4: Check for Errors <a class="header-anchor" href="#step-4%3A-check-for-errors" aria-hidden="true">#</a></h3>
+<p>If the HUD briefly shows <code>[claude-hud] Initializing...</code> and then disappears, the plugin may be crashing. Test it manually:</p>
+<pre><code class="language-bash">echo '{&quot;model&quot;:{&quot;display_name&quot;:&quot;Opus&quot;},&quot;context_window&quot;:{&quot;current_usage&quot;:{&quot;input_tokens&quot;:45000},&quot;context_window_size&quot;:200000}}' | node ~/.claude/plugins/claude-hud/dist/index.js
+</code></pre>
+<p>If this produces output, the plugin itself is working and the issue is in the statusline configuration. If it throws an error, check that Node.js 18+ is installed.</p>
+<hr>
+<h2 id="usage-display-issues" tabindex="-1">Usage Display Issues <a class="header-anchor" href="#usage-display-issues" aria-hidden="true">#</a></h2>
+<p>The usage display shows your rate limit consumption for Claude Pro, Max, and Team subscriptions. It appears on the same line as the context bar.</p>
+<h3 id="usage-not-showing" tabindex="-1">Usage Not Showing <a class="header-anchor" href="#usage-not-showing" aria-hidden="true">#</a></h3>
+<p>Several conditions can prevent usage data from appearing:</p>
+<table>
+<thead>
+<tr>
+<th>Condition</th>
+<th>Why Usage Is Hidden</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>API key authentication</td>
+<td>Pay-per-token users have no rate limits to display</td>
+</tr>
+<tr>
+<td>AWS Bedrock models</td>
+<td>Usage is managed in AWS, not via Anthropic’s API</td>
+</tr>
+<tr>
+<td>Custom <code>ANTHROPIC_BASE_URL</code></td>
+<td>The Anthropic OAuth usage API may not apply</td>
+</tr>
+<tr>
+<td><code>display.showUsage: false</code></td>
+<td>Explicitly disabled in config</td>
+</tr>
+</tbody>
+</table>
+<p><strong>To fix:</strong></p>
+<ol>
+<li>Confirm you’re logged in with a Pro, Max, or Team account (not an API key).</li>
+<li>Check your config file at <code>~/.claude/plugins/claude-hud/config.json</code> and ensure <code>display.showUsage</code> is not <code>false</code>.</li>
+<li>If you use AWS Bedrock, usage display is intentionally hidden — the HUD shows <code>Bedrock</code> instead.</li>
+</ol>
+<h3 id="usage-shows-stale-data" tabindex="-1">Usage Shows Stale Data <a class="header-anchor" href="#usage-shows-stale-data" aria-hidden="true">#</a></h3>
+<p>The HUD caches usage API responses to reduce network calls:</p>
+<ul>
+<li><strong>Successful responses:</strong> cached for 60 seconds (configurable via <code>usage.cacheTtlSeconds</code>)</li>
+<li><strong>Failed responses:</strong> cached for 15 seconds (configurable via <code>usage.failureCacheTtlSeconds</code>)</li>
+</ul>
+<p>If you need fresher data, lower the cache TTL in your config:</p>
+<pre><code class="language-json">{
+  &quot;usage&quot;: {
+    &quot;cacheTtlSeconds&quot;: 30
+  }
+}
+</code></pre>
+<h3 id="proxy-and-network-issues" tabindex="-1">Proxy and Network Issues <a class="header-anchor" href="#proxy-and-network-issues" aria-hidden="true">#</a></h3>
+<p>If you’re behind a corporate proxy, the usage API call may fail silently. Set the appropriate proxy environment variable:</p>
+<pre><code class="language-bash">export HTTPS_PROXY=http://proxy.example.com:8080
+</code></pre>
+<p>You can also use <code>HTTP_PROXY</code>, <code>ALL_PROXY</code>, or <code>NO_PROXY</code> as needed. For high-latency environments, increase the usage API timeout:</p>
+<pre><code class="language-bash">export CLAUDE_HUD_USAGE_TIMEOUT_MS=10000
+</code></pre>
+<hr>
+<h2 id="configuration-problems" tabindex="-1">Configuration Problems <a class="header-anchor" href="#configuration-problems" aria-hidden="true">#</a></h2>
+<h3 id="config-not-applying" tabindex="-1">Config Not Applying <a class="header-anchor" href="#config-not-applying" aria-hidden="true">#</a></h3>
+<p>If your configuration changes aren’t reflected in the HUD:</p>
+<ol>
+<li>
+<p><strong>Check for JSON syntax errors.</strong> Invalid JSON silently falls back to defaults. Validate your config file:</p>
+<pre><code class="language-bash">cat ~/.claude/plugins/claude-hud/config.json | python3 -m json.tool
+</code></pre>
+<p>If this prints an error, fix the JSON syntax.</p>
+</li>
+<li>
+<p><strong>Verify valid values.</strong> Some options have strict allowed values:</p>
+<ul>
+<li><code>lineLayout</code> must be <code>&quot;expanded&quot;</code> or <code>&quot;compact&quot;</code></li>
+<li><code>pathLevels</code> must be <code>1</code>, <code>2</code>, or <code>3</code></li>
+<li><code>display.contextValue</code> must be <code>&quot;percent&quot;</code>, <code>&quot;tokens&quot;</code>, or <code>&quot;remaining&quot;</code></li>
+</ul>
+</li>
+<li>
+<p><strong>Regenerate from scratch.</strong> Delete the config and use the guided setup:</p>
+<pre><code class="language-bash">rm ~/.claude/plugins/claude-hud/config.json
+</code></pre>
+<p>Then in Claude Code:</p>
+<pre><code>/claude-hud:configure
+</code></pre>
+</li>
+</ol>
+<h3 id="manual-edits-overwritten" tabindex="-1">Manual Edits Overwritten <a class="header-anchor" href="#manual-edits-overwritten" aria-hidden="true">#</a></h3>
+<p>Running <code>/claude-hud:configure</code> preserves manual settings like <code>colors.*</code>, <code>pathLevels</code>, and threshold overrides. However, if you see unexpected resets:</p>
+<ul>
+<li>Ensure you’re editing the correct file: <code>~/.claude/plugins/claude-hud/config.json</code></li>
+<li>Back up your config before running the configure command</li>
+<li>Advanced settings not covered by the guided flow (like <code>colors</code> and <code>usage.cacheTtlSeconds</code>) are kept intact</li>
+</ul>
+<hr>
+<h2 id="display-issues" tabindex="-1">Display Issues <a class="header-anchor" href="#display-issues" aria-hidden="true">#</a></h2>
+<h3 id="git-status-missing" tabindex="-1">Git Status Missing <a class="header-anchor" href="#git-status-missing" aria-hidden="true">#</a></h3>
+<p>If the project path shows without a git branch:</p>
+<ol>
+<li>Verify you’re in a git repository:<pre><code class="language-bash">git rev-parse --is-inside-work-tree
+</code></pre>
+</li>
+<li>Check that git status is enabled in your config — <code>gitStatus.enabled</code> defaults to <code>true</code>, but may have been set to <code>false</code>.</li>
+</ol>
+<h3 id="tool%2C-agent%2C-or-todo-lines-not-appearing" tabindex="-1">Tool, Agent, or Todo Lines Not Appearing <a class="header-anchor" href="#tool%2C-agent%2C-or-todo-lines-not-appearing" aria-hidden="true">#</a></h3>
+<p>These lines are <strong>hidden by default</strong>. Enable them in your config:</p>
+<pre><code class="language-json">{
+  &quot;display&quot;: {
+    &quot;showTools&quot;: true,
+    &quot;showAgents&quot;: true,
+    &quot;showTodos&quot;: true
+  }
+}
+</code></pre>
+<p>Or run <code>/claude-hud:configure</code> and choose the <strong>Full</strong> preset, which enables everything.</p>
+<p>Even when enabled, these lines only appear when there’s activity to show:</p>
+<ul>
+<li><strong>Tools line:</strong> appears once Claude starts using tools (Read, Edit, Grep, etc.)</li>
+<li><strong>Agents line:</strong> appears when subagents (Task calls) are running</li>
+<li><strong>Todos line:</strong> appears when a TodoWrite has created tasks</li>
+</ul>
+<h3 id="context-percentage-seems-wrong" tabindex="-1">Context Percentage Seems Wrong <a class="header-anchor" href="#context-percentage-seems-wrong" aria-hidden="true">#</a></h3>
+<p>The context percentage comes directly from Claude Code’s native token data — it’s not estimated. The formula is:</p>
+<pre><code>(input_tokens / context_window_size) × 100
+</code></pre>
+<p>If the number seems off, consider that:</p>
+<ul>
+<li>Claude Code may report a larger context window for newer 1M-context sessions</li>
+<li>The token count includes the full conversation, system prompts, and tool results</li>
+<li>The percentage updates every ~300ms, so brief spikes are normal</li>
+</ul>
+<h3 id="token-breakdown-at-high-context" tabindex="-1">Token Breakdown at High Context <a class="header-anchor" href="#token-breakdown-at-high-context" aria-hidden="true">#</a></h3>
+<p>When context usage exceeds 85%, the HUD automatically shows a token breakdown to help you understand what’s consuming space. This is controlled by <code>display.showTokenBreakdown</code> (default: <code>true</code>).</p>
+<p>To disable it:</p>
+<pre><code class="language-json">{
+  &quot;display&quot;: {
+    &quot;showTokenBreakdown&quot;: false
+  }
+}
+</code></pre>
+<hr>
+<h2 id="platform-specific-issues" tabindex="-1">Platform-Specific Issues <a class="header-anchor" href="#platform-specific-issues" aria-hidden="true">#</a></h2>
+<h3 id="macos" tabindex="-1">macOS <a class="header-anchor" href="#macos" aria-hidden="true">#</a></h3>
+<p>Claude HUD generally works without issues on macOS. If you experience display problems:</p>
+<ul>
+<li>Ensure your terminal supports ANSI color codes (Terminal.app, iTerm2, Warp, and Alacritty all do)</li>
+<li>If colors look wrong, check that your terminal is set to report as <code>xterm-256color</code> or similar</li>
+</ul>
+<h3 id="linux" tabindex="-1">Linux <a class="header-anchor" href="#linux" aria-hidden="true">#</a></h3>
+<p>Beyond the <code>EXDEV</code> installation issue described above:</p>
+<ul>
+<li>Some minimal terminal emulators may not render ANSI colors correctly</li>
+<li>If running in a container or remote environment, ensure Node.js 18+ is available in the runtime path</li>
+</ul>
+<h3 id="windows-(wsl)" tabindex="-1">Windows (WSL) <a class="header-anchor" href="#windows-(wsl)" aria-hidden="true">#</a></h3>
+<p>Claude HUD works in WSL (Windows Subsystem for Linux). The same Linux-specific notes apply:</p>
+<ul>
+<li>Use the <code>TMPDIR</code> workaround if installation fails</li>
+<li>Ensure Node.js 18+ is installed within WSL, not the Windows version</li>
+</ul>
+<hr>
+<h2 id="getting-help" tabindex="-1">Getting Help <a class="header-anchor" href="#getting-help" aria-hidden="true">#</a></h2>
+<p>If none of the solutions above resolve your issue:</p>
+<ol>
+<li><strong>Search existing issues:</strong> <a href="https://github.com/jarrodwatts/claude-hud/issues">github.com/jarrodwatts/claude-hud/issues</a></li>
+<li><strong>File a new issue</strong> with:
+<ul>
+<li>Your Claude Code version (<code>claude --version</code>)</li>
+<li>Your Node.js version (<code>node --version</code>)</li>
+<li>Your operating system and terminal</li>
+<li>The output of running the manual test command from the “Statusline Not Appearing” section</li>
+</ul>
+</li>
+<li><strong>Check the README</strong> for the latest updates: <a href="https://github.com/jarrodwatts/claude-hud">github.com/jarrodwatts/claude-hud</a></li>
+</ol>
+<hr>
+<h2 id="related-topics" tabindex="-1">Related Topics <a class="header-anchor" href="#related-topics" aria-hidden="true">#</a></h2>
+<ul>
+<li><a href="configuration.html">Configuration</a> — full reference for all config options</li>
+<li><a href="hud-elements.html">HUD Elements</a> — understand what each display element means</li>
+<li><a href="getting-started.html">Getting Started</a> — installation and initial setup</li>
+<li><a href="architecture.html">Architecture</a> — how the plugin works under the hood</li>
+</ul>
+</main>
+    <nav data-ds="toc"><div class="toc-title">On this page</div><ul><li><a href="#installation-issues">Installation Issues</a></li><ul><li><a href="#plugin-install-fails-or-times-out">Plugin Install Fails or Times Out</a></li></ul><li><a href="#statusline-not-appearing">Statusline Not Appearing</a></li><ul><li><a href="#step-1%3A-verify-the-plugin-is-installed">Step 1: Verify the Plugin Is Installed</a></li><li><a href="#step-2%3A-run-setup">Step 2: Run Setup</a></li><li><a href="#step-3%3A-check-claude-code-version">Step 3: Check Claude Code Version</a></li><li><a href="#step-4%3A-check-for-errors">Step 4: Check for Errors</a></li></ul><li><a href="#usage-display-issues">Usage Display Issues</a></li><ul><li><a href="#usage-not-showing">Usage Not Showing</a></li><li><a href="#usage-shows-stale-data">Usage Shows Stale Data</a></li><li><a href="#proxy-and-network-issues">Proxy and Network Issues</a></li></ul><li><a href="#configuration-problems">Configuration Problems</a></li><ul><li><a href="#config-not-applying">Config Not Applying</a></li><li><a href="#manual-edits-overwritten">Manual Edits Overwritten</a></li></ul><li><a href="#display-issues">Display Issues</a></li><ul><li><a href="#git-status-missing">Git Status Missing</a></li><li><a href="#tool%2C-agent%2C-or-todo-lines-not-appearing">Tool, Agent, or Todo Lines Not Appearing</a></li><li><a href="#context-percentage-seems-wrong">Context Percentage Seems Wrong</a></li><li><a href="#token-breakdown-at-high-context">Token Breakdown at High Context</a></li></ul><li><a href="#platform-specific-issues">Platform-Specific Issues</a></li><ul><li><a href="#macos">macOS</a></li><li><a href="#linux">Linux</a></li><li><a href="#windows-(wsl)">Windows (WSL)</a></li></ul><li><a href="#getting-help">Getting Help</a></li><li><a href="#related-topics">Related Topics</a></li></ul></nav>
+  </div>
+  <footer data-ds="footer">
+    <a href="https://docsmith.aigne.io/" target="_blank" rel="noopener noreferrer" class="docsmith-badge">
+      <svg class="docsmith-badge-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+        <polyline points="14 2 14 8 20 8"></polyline>
+        <line x1="16" y1="13" x2="8" y2="13"></line>
+        <line x1="16" y1="17" x2="8" y2="17"></line>
+        <polyline points="10 9 9 9 8 9"></polyline>
+      </svg>
+      <span>Built with <strong>AIGNE DocSmith</strong></span>
+    </a>
+  </footer>
+
+  <script>document.addEventListener('DOMContentLoaded', function() {
+    if (typeof hljs !== 'undefined') hljs.highlightAll();
+  });</script>
+</body>
+</html>

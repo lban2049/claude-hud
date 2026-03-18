@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>配置 - claude-hud</title>
+  <meta name="description" content="">
+  <meta property="og:title" content="配置">
+  <meta property="og:description" content="">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+  <link rel="stylesheet" href="../../assets/docsmith.css">
+  <link rel="stylesheet" href="../../assets/theme.css">
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github-dark.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js" defer></script>
+  <script src="../../assets/nav.js" defer></script>
+  <script>
+    // Initialize theme from localStorage or system preference
+    (function() {
+      const stored = localStorage.getItem('docsmith-theme');
+      if (stored) {
+        document.documentElement.setAttribute('data-theme', stored);
+      } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      }
+    })();
+
+    function toggleTheme() {
+      const html = document.documentElement;
+      const current = html.getAttribute('data-theme');
+      const next = current === 'dark' ? 'light' : 'dark';
+      html.setAttribute('data-theme', next);
+      localStorage.setItem('docsmith-theme', next);
+    }
+  </script>
+</head>
+<body data-ds-path="/configuration">
+  <header data-ds="header">
+    <a href="/zh/index.html" class="site-title">claude-hud</a>
+    <div class="header-controls">
+
+    <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
+      <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="5"></circle>
+        <line x1="12" y1="1" x2="12" y2="3"></line>
+        <line x1="12" y1="21" x2="12" y2="23"></line>
+        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+        <line x1="1" y1="12" x2="3" y2="12"></line>
+        <line x1="21" y1="12" x2="23" y2="12"></line>
+        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+      </svg>
+      <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+      </svg>
+    </button>
+    </div>
+  </header>
+  <div data-ds="layout">
+    <aside data-ds="sidebar"><!-- nav.js 渲染 --></aside>
+    <main data-ds="content"><h1 id="%E9%85%8D%E7%BD%AE" tabindex="-1">配置 <a class="header-anchor" href="#%E9%85%8D%E7%BD%AE" aria-hidden="true">#</a></h1>
+<p>Claude HUD 高度可定制。你可以调整布局、选择显示哪些元素、更改颜色、控制阈值以及重新排列各部分——所有这些都通过一个 JSON 配置文件完成。</p>
+<p><strong>前置条件：</strong> <a href="getting-started.html">快速入门</a>（已安装并运行 Claude HUD）</p>
+<hr>
+<h2 id="%E9%85%8D%E7%BD%AE%E6%96%B9%E5%BC%8F" tabindex="-1">配置方式 <a class="header-anchor" href="#%E9%85%8D%E7%BD%AE%E6%96%B9%E5%BC%8F" aria-hidden="true">#</a></h2>
+<p>有两种方式配置 Claude HUD：</p>
+<h3 id="%E4%BA%A4%E4%BA%92%E5%BC%8F%E8%AE%BE%E7%BD%AE" tabindex="-1">交互式设置 <a class="header-anchor" href="#%E4%BA%A4%E4%BA%92%E5%BC%8F%E8%AE%BE%E7%BD%AE" aria-hidden="true">#</a></h3>
+<p>在 Claude Code 中运行内置的配置命令：</p>
+<pre><code>/claude-hud:configure
+</code></pre>
+<p>此引导式流程允许你选择预设、切换各个元素，并在保存前预览结果。你之前手动编辑的内容（如自定义颜色或阈值）将被保留。</p>
+<h3 id="%E6%89%8B%E5%8A%A8%E7%BC%96%E8%BE%91" tabindex="-1">手动编辑 <a class="header-anchor" href="#%E6%89%8B%E5%8A%A8%E7%BC%96%E8%BE%91" aria-hidden="true">#</a></h3>
+<p>直接编辑配置文件以完全控制每个选项：</p>
+<pre><code>~/.claude/plugins/claude-hud/config.json
+</code></pre>
+<p>该文件使用标准 JSON 格式。如果文件不存在，Claude HUD 将使用内置默认值。如果文件包含无效的 JSON，也会静默回退到默认值。</p>
+<hr>
+<h2 id="%E9%A2%84%E8%AE%BE" tabindex="-1">预设 <a class="header-anchor" href="#%E9%A2%84%E8%AE%BE" aria-hidden="true">#</a></h2>
+<p>运行 <code>/claude-hud:configure</code> 时，你首先需要选择一个预设。每个预设都是一个起点——之后你可以自定义各项设置。</p>
+<table>
+<thead>
+<tr>
+<th>预设</th>
+<th>启用的功能</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Full</strong></td>
+<td>全部启用——工具、Agent、待办事项、Git 文件统计、用量、持续时间</td>
+</tr>
+<tr>
+<td><strong>Essential</strong></td>
+<td>活动行和 Git 状态，信息干扰最少</td>
+</tr>
+<tr>
+<td><strong>Minimal</strong></td>
+<td>仅核心——模型名称和上下文条</td>
+</tr>
+</tbody>
+</table>
+<p>选择预设后，交互式流程将引导你逐个切换各元素的开关。</p>
+<hr>
+<h2 id="%E5%B8%83%E5%B1%80%E9%80%89%E9%A1%B9" tabindex="-1">布局选项 <a class="header-anchor" href="#%E5%B8%83%E5%B1%80%E9%80%89%E9%A1%B9" aria-hidden="true">#</a></h2>
+<h3 id="%E8%A1%8C%E5%B8%83%E5%B1%80" tabindex="-1">行布局 <a class="header-anchor" href="#%E8%A1%8C%E5%B8%83%E5%B1%80" aria-hidden="true">#</a></h3>
+<p><code>lineLayout</code> 选项控制 HUD 信息的排列方式：</p>
+<pre><code class="language-json">{
+  &quot;lineLayout&quot;: &quot;expanded&quot;
+}
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>值</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>expanded</code></td>
+<td>每组元素独占一行（默认）</td>
+</tr>
+<tr>
+<td><code>compact</code></td>
+<td>所有元素压缩到较少的行数</td>
+</tr>
+</tbody>
+</table>
+<h3 id="%E5%88%86%E9%9A%94%E7%AC%A6" tabindex="-1">分隔符 <a class="header-anchor" href="#%E5%88%86%E9%9A%94%E7%AC%A6" aria-hidden="true">#</a></h3>
+<p>在显示元素之间添加视觉分隔符：</p>
+<pre><code class="language-json">{
+  &quot;showSeparators&quot;: true
+}
+</code></pre>
+<p>启用后，元素之间会以 <code>|</code> 字符分隔，提高视觉清晰度。</p>
+<h3 id="%E9%A1%B9%E7%9B%AE%E8%B7%AF%E5%BE%84%E6%B7%B1%E5%BA%A6" tabindex="-1">项目路径深度 <a class="header-anchor" href="#%E9%A1%B9%E7%9B%AE%E8%B7%AF%E5%BE%84%E6%B7%B1%E5%BA%A6" aria-hidden="true">#</a></h3>
+<p>控制项目路径显示中包含多少层目录：</p>
+<pre><code class="language-json">{
+  &quot;pathLevels&quot;: 2
+}
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>值</th>
+<th>输出示例</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>1</code></td>
+<td><code>my-project git:(main)</code></td>
+</tr>
+<tr>
+<td><code>2</code></td>
+<td><code>apps/my-project git:(main)</code></td>
+</tr>
+<tr>
+<td><code>3</code></td>
+<td><code>dev/apps/my-project git:(main)</code></td>
+</tr>
+</tbody>
+</table>
+<p>仅接受 <code>1</code>、<code>2</code> 或 <code>3</code>。其他值将回退到默认值 <code>1</code>。</p>
+<h3 id="%E5%85%83%E7%B4%A0%E9%A1%BA%E5%BA%8F" tabindex="-1">元素顺序 <a class="header-anchor" href="#%E5%85%83%E7%B4%A0%E9%A1%BA%E5%BA%8F" aria-hidden="true">#</a></h3>
+<p>在展开布局模式下，你可以控制 HUD 元素的顺序，并通过省略元素来隐藏它们：</p>
+<pre><code class="language-json">{
+  &quot;elementOrder&quot;: [&quot;project&quot;, &quot;tools&quot;, &quot;context&quot;, &quot;usage&quot;, &quot;environment&quot;, &quot;agents&quot;, &quot;todos&quot;]
+}
+</code></pre>
+<p>可用元素：<code>project</code>、<code>context</code>、<code>usage</code>、<code>environment</code>、<code>tools</code>、<code>agents</code>、<code>todos</code>。</p>
+<p>未包含在数组中的元素在展开模式下将被隐藏。重复条目和无法识别的名称将被忽略。</p>
+<hr>
+<h2 id="%E6%98%BE%E7%A4%BA%E5%BC%80%E5%85%B3" tabindex="-1">显示开关 <a class="header-anchor" href="#%E6%98%BE%E7%A4%BA%E5%BC%80%E5%85%B3" aria-hidden="true">#</a></h2>
+<p><code>display</code> 对象控制各个 HUD 组件的可见性和行为。</p>
+<h3 id="%E4%BC%9A%E8%AF%9D%E4%BF%A1%E6%81%AF" tabindex="-1">会话信息 <a class="header-anchor" href="#%E4%BC%9A%E8%AF%9D%E4%BF%A1%E6%81%AF" aria-hidden="true">#</a></h3>
+<table>
+<thead>
+<tr>
+<th>选项</th>
+<th>类型</th>
+<th>默认值</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>showModel</code></td>
+<td>boolean</td>
+<td><code>true</code></td>
+<td>显示模型名称，例如 <code>[Opus]</code></td>
+</tr>
+<tr>
+<td><code>showProject</code></td>
+<td>boolean</td>
+<td><code>true</code></td>
+<td>显示项目路径</td>
+</tr>
+<tr>
+<td><code>showSessionName</code></td>
+<td>boolean</td>
+<td><code>false</code></td>
+<td>显示会话标识或通过 <code>/rename</code> 设置的自定义标题</td>
+</tr>
+<tr>
+<td><code>showDuration</code></td>
+<td>boolean</td>
+<td><code>false</code></td>
+<td>显示会话持续时间，例如 <code>5m</code></td>
+</tr>
+<tr>
+<td><code>showSpeed</code></td>
+<td>boolean</td>
+<td><code>false</code></td>
+<td>显示输出 token 速度，例如 <code>out: 42.1 tok/s</code></td>
+</tr>
+<tr>
+<td><code>showConfigCounts</code></td>
+<td>boolean</td>
+<td><code>false</code></td>
+<td>显示 <a href="http://CLAUDE.md">CLAUDE.md</a> 文件、规则、MCP 和钩子的数量</td>
+</tr>
+</tbody>
+</table>
+<h3 id="%E4%B8%8A%E4%B8%8B%E6%96%87%E6%98%BE%E7%A4%BA" tabindex="-1">上下文显示 <a class="header-anchor" href="#%E4%B8%8A%E4%B8%8B%E6%96%87%E6%98%BE%E7%A4%BA" aria-hidden="true">#</a></h3>
+<table>
+<thead>
+<tr>
+<th>选项</th>
+<th>类型</th>
+<th>默认值</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>showContextBar</code></td>
+<td>boolean</td>
+<td><code>true</code></td>
+<td>显示上下文使用量的可视化进度条</td>
+</tr>
+<tr>
+<td><code>contextValue</code></td>
+<td>string</td>
+<td><code>&quot;percent&quot;</code></td>
+<td>上下文数值的显示格式</td>
+</tr>
+<tr>
+<td><code>showTokenBreakdown</code></td>
+<td>boolean</td>
+<td><code>true</code></td>
+<td>当上下文超过 85% 时显示 token 详情</td>
+</tr>
+</tbody>
+</table>
+<p><code>contextValue</code> 选项接受三种格式：</p>
+<table>
+<thead>
+<tr>
+<th>值</th>
+<th>输出示例</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>&quot;percent&quot;</code></td>
+<td><code>45%</code></td>
+<td>已使用的上下文百分比</td>
+</tr>
+<tr>
+<td><code>&quot;tokens&quot;</code></td>
+<td><code>45k/200k</code></td>
+<td>Token 计数与总容量</td>
+</tr>
+<tr>
+<td><code>&quot;remaining&quot;</code></td>
+<td><code>55%</code></td>
+<td>剩余上下文百分比</td>
+</tr>
+</tbody>
+</table>
+<h3 id="%E7%94%A8%E9%87%8F%E9%99%90%E5%88%B6" tabindex="-1">用量限制 <a class="header-anchor" href="#%E7%94%A8%E9%87%8F%E9%99%90%E5%88%B6" aria-hidden="true">#</a></h3>
+<table>
+<thead>
+<tr>
+<th>选项</th>
+<th>类型</th>
+<th>默认值</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>showUsage</code></td>
+<td>boolean</td>
+<td><code>true</code></td>
+<td>显示速率限制消耗情况</td>
+</tr>
+<tr>
+<td><code>usageBarEnabled</code></td>
+<td>boolean</td>
+<td><code>true</code></td>
+<td>以可视化进度条形式渲染用量</td>
+</tr>
+<tr>
+<td><code>sevenDayThreshold</code></td>
+<td>0-100</td>
+<td><code>80</code></td>
+<td>当 7 天用量达到此百分比时显示（0 = 始终显示）</td>
+</tr>
+<tr>
+<td><code>usageThreshold</code></td>
+<td>0-100</td>
+<td><code>0</code></td>
+<td>显示 5 小时用量的最低百分比（0 = 始终显示）</td>
+</tr>
+<tr>
+<td><code>environmentThreshold</code></td>
+<td>0-100</td>
+<td><code>0</code></td>
+<td>显示环境用量的最低百分比（0 = 始终显示）</td>
+</tr>
+</tbody>
+</table>
+<p>用量显示适用于 Claude Pro、Max 和 Team 订阅用户。API 用户没有速率限制，不会看到用量数据。</p>
+<p>当 7 天用量超过配置的阈值时，会出现额外的进度条：</p>
+<pre><code>Context ████░░░░░░ 45% | Usage ██░░░░░░░░ 25% (1h 30m / 5h) | ██████████ 85% (2d / 7d)
+</code></pre>
+<h3 id="%E6%B4%BB%E5%8A%A8%E8%A1%8C" tabindex="-1">活动行 <a class="header-anchor" href="#%E6%B4%BB%E5%8A%A8%E8%A1%8C" aria-hidden="true">#</a></h3>
+<p>这些行默认隐藏，仅在有活动需要显示时才出现。</p>
+<table>
+<thead>
+<tr>
+<th>选项</th>
+<th>类型</th>
+<th>默认值</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>showTools</code></td>
+<td>boolean</td>
+<td><code>false</code></td>
+<td>显示工具活动（读取、编辑、搜索）</td>
+</tr>
+<tr>
+<td><code>showAgents</code></td>
+<td>boolean</td>
+<td><code>false</code></td>
+<td>显示正在运行的子 Agent 及其任务</td>
+</tr>
+<tr>
+<td><code>showTodos</code></td>
+<td>boolean</td>
+<td><code>false</code></td>
+<td>显示待办事项进度</td>
+</tr>
+</tbody>
+</table>
+<p>启用以下三项以获得最大可见性：</p>
+<pre><code class="language-json">{
+  &quot;display&quot;: {
+    &quot;showTools&quot;: true,
+    &quot;showAgents&quot;: true,
+    &quot;showTodos&quot;: true
+  }
+}
+</code></pre>
+<h3 id="%E8%87%AA%E5%8A%A8%E5%8E%8B%E7%BC%A9%E7%BC%93%E5%86%B2%E5%8C%BA" tabindex="-1">自动压缩缓冲区 <a class="header-anchor" href="#%E8%87%AA%E5%8A%A8%E5%8E%8B%E7%BC%A9%E7%BC%93%E5%86%B2%E5%8C%BA" aria-hidden="true">#</a></h3>
+<table>
+<thead>
+<tr>
+<th>选项</th>
+<th>类型</th>
+<th>默认值</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>autocompactBuffer</code></td>
+<td>string</td>
+<td><code>&quot;enabled&quot;</code></td>
+<td>显示自动压缩警告指示器</td>
+</tr>
+</tbody>
+</table>
+<p>启用后，当上下文接近自动压缩阈值时，HUD 会显示警告。设置为 <code>&quot;disabled&quot;</code> 可隐藏此指示器。</p>
+<hr>
+<h2 id="git-%E7%8A%B6%E6%80%81" tabindex="-1">Git 状态 <a class="header-anchor" href="#git-%E7%8A%B6%E6%80%81" aria-hidden="true">#</a></h2>
+<p><code>gitStatus</code> 部分控制仓库信息在 HUD 中的显示方式。</p>
+<pre><code class="language-json">{
+  &quot;gitStatus&quot;: {
+    &quot;enabled&quot;: true,
+    &quot;showDirty&quot;: true,
+    &quot;showAheadBehind&quot;: true,
+    &quot;showFileStats&quot;: true
+  }
+}
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>选项</th>
+<th>类型</th>
+<th>默认值</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>enabled</code></td>
+<td>boolean</td>
+<td><code>true</code></td>
+<td>显示 Git 分支名称</td>
+</tr>
+<tr>
+<td><code>showDirty</code></td>
+<td>boolean</td>
+<td><code>true</code></td>
+<td>有未提交更改时追加 <code>*</code></td>
+</tr>
+<tr>
+<td><code>showAheadBehind</code></td>
+<td>boolean</td>
+<td><code>false</code></td>
+<td>显示 <code>up-arrow N down-arrow N</code> 表示领先/落后远程的提交数</td>
+</tr>
+<tr>
+<td><code>showFileStats</code></td>
+<td>boolean</td>
+<td><code>false</code></td>
+<td>显示文件变更统计</td>
+</tr>
+</tbody>
+</table>
+<p>启用所有选项后，显示效果如下：</p>
+<pre><code>[Opus] | my-project git:(main* up2 down1 !3 +1 ?2)
+</code></pre>
+<p>文件统计指示符：</p>
+<table>
+<thead>
+<tr>
+<th>符号</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>!</code></td>
+<td>已修改文件</td>
+</tr>
+<tr>
+<td><code>+</code></td>
+<td>已添加/暂存文件</td>
+</tr>
+<tr>
+<td><code>X</code></td>
+<td>已删除文件</td>
+</tr>
+<tr>
+<td><code>?</code></td>
+<td>未跟踪文件</td>
+</tr>
+</tbody>
+</table>
+<p>计数为零的项会被省略，使显示更简洁。</p>
+<hr>
+<h2 id="%E9%A2%9C%E8%89%B2" tabindex="-1">颜色 <a class="header-anchor" href="#%E9%A2%9C%E8%89%B2" aria-hidden="true">#</a></h2>
+<p>通过 <code>colors</code> 对象自定义配色方案。颜色应用于进度条、百分比和警告状态。</p>
+<pre><code class="language-json">{
+  &quot;colors&quot;: {
+    &quot;context&quot;: &quot;cyan&quot;,
+    &quot;usage&quot;: &quot;cyan&quot;,
+    &quot;warning&quot;: &quot;yellow&quot;,
+    &quot;usageWarning&quot;: &quot;magenta&quot;,
+    &quot;critical&quot;: &quot;red&quot;
+  }
+}
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>颜色键</th>
+<th>默认值</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>context</code></td>
+<td><code>green</code></td>
+<td>上下文进度条和上下文百分比</td>
+</tr>
+<tr>
+<td><code>usage</code></td>
+<td><code>brightBlue</code></td>
+<td>用量进度条和低于警告阈值时的百分比</td>
+</tr>
+<tr>
+<td><code>warning</code></td>
+<td><code>yellow</code></td>
+<td>上下文阈值警告和用量警告文本</td>
+</tr>
+<tr>
+<td><code>usageWarning</code></td>
+<td><code>brightMagenta</code></td>
+<td>接近阈值时的用量进度条和百分比</td>
+</tr>
+<tr>
+<td><code>critical</code></td>
+<td><code>red</code></td>
+<td>达到限制的状态和临界阈值</td>
+</tr>
+</tbody>
+</table>
+<h3 id="%E5%8F%AF%E7%94%A8%E9%A2%9C%E8%89%B2%E5%90%8D%E7%A7%B0" tabindex="-1">可用颜色名称 <a class="header-anchor" href="#%E5%8F%AF%E7%94%A8%E9%A2%9C%E8%89%B2%E5%90%8D%E7%A7%B0" aria-hidden="true">#</a></h3>
+<p><code>red</code>、<code>green</code>、<code>yellow</code>、<code>magenta</code>、<code>cyan</code>、<code>brightBlue</code>、<code>brightMagenta</code></p>
+<p>无效的颜色名称会回退到该键的默认值。</p>
+<hr>
+<h2 id="%E7%94%A8%E9%87%8F%E7%BC%93%E5%AD%98" tabindex="-1">用量缓存 <a class="header-anchor" href="#%E7%94%A8%E9%87%8F%E7%BC%93%E5%AD%98" aria-hidden="true">#</a></h2>
+<p><code>usage</code> 部分控制 Claude HUD 从 Anthropic API 刷新速率限制数据的频率。</p>
+<pre><code class="language-json">{
+  &quot;usage&quot;: {
+    &quot;cacheTtlSeconds&quot;: 120,
+    &quot;failureCacheTtlSeconds&quot;: 30
+  }
+}
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>选项</th>
+<th>类型</th>
+<th>默认值</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>cacheTtlSeconds</code></td>
+<td>number</td>
+<td><code>60</code></td>
+<td>成功的用量 API 响应的缓存秒数</td>
+</tr>
+<tr>
+<td><code>failureCacheTtlSeconds</code></td>
+<td>number</td>
+<td><code>15</code></td>
+<td>失败响应在重试前的缓存秒数</td>
+</tr>
+</tbody>
+</table>
+<p>两个值都必须为正整数。无效值会回退到默认值。</p>
+<p>增大 <code>cacheTtlSeconds</code> 可减少 API 调用次数，但会使用量数据的时效性降低。在高延迟环境中，你还可以设置 <code>CLAUDE_HUD_USAGE_TIMEOUT_MS</code> 环境变量（单位为毫秒）来增加 API 请求超时时间。</p>
+<hr>
+<h2 id="%E5%AE%8C%E6%95%B4%E7%A4%BA%E4%BE%8B" tabindex="-1">完整示例 <a class="header-anchor" href="#%E5%AE%8C%E6%95%B4%E7%A4%BA%E4%BE%8B" aria-hidden="true">#</a></h2>
+<p>以下是一个启用所有功能并自定义颜色的完整配置：</p>
+<pre><code class="language-json">{
+  &quot;lineLayout&quot;: &quot;expanded&quot;,
+  &quot;showSeparators&quot;: false,
+  &quot;pathLevels&quot;: 2,
+  &quot;elementOrder&quot;: [&quot;project&quot;, &quot;tools&quot;, &quot;context&quot;, &quot;usage&quot;, &quot;environment&quot;, &quot;agents&quot;, &quot;todos&quot;],
+  &quot;gitStatus&quot;: {
+    &quot;enabled&quot;: true,
+    &quot;showDirty&quot;: true,
+    &quot;showAheadBehind&quot;: true,
+    &quot;showFileStats&quot;: true
+  },
+  &quot;display&quot;: {
+    &quot;showModel&quot;: true,
+    &quot;showProject&quot;: true,
+    &quot;showContextBar&quot;: true,
+    &quot;contextValue&quot;: &quot;percent&quot;,
+    &quot;showConfigCounts&quot;: true,
+    &quot;showDuration&quot;: true,
+    &quot;showSpeed&quot;: false,
+    &quot;showTokenBreakdown&quot;: true,
+    &quot;showUsage&quot;: true,
+    &quot;usageBarEnabled&quot;: true,
+    &quot;showTools&quot;: true,
+    &quot;showAgents&quot;: true,
+    &quot;showTodos&quot;: true,
+    &quot;showSessionName&quot;: false,
+    &quot;autocompactBuffer&quot;: &quot;enabled&quot;,
+    &quot;usageThreshold&quot;: 0,
+    &quot;sevenDayThreshold&quot;: 80,
+    &quot;environmentThreshold&quot;: 0
+  },
+  &quot;usage&quot;: {
+    &quot;cacheTtlSeconds&quot;: 60,
+    &quot;failureCacheTtlSeconds&quot;: 15
+  },
+  &quot;colors&quot;: {
+    &quot;context&quot;: &quot;cyan&quot;,
+    &quot;usage&quot;: &quot;brightBlue&quot;,
+    &quot;warning&quot;: &quot;yellow&quot;,
+    &quot;usageWarning&quot;: &quot;magenta&quot;,
+    &quot;critical&quot;: &quot;red&quot;
+  }
+}
+</code></pre>
+<hr>
+<h2 id="%E6%A0%A1%E9%AA%8C%E4%B8%8E%E9%BB%98%E8%AE%A4%E5%80%BC" tabindex="-1">校验与默认值 <a class="header-anchor" href="#%E6%A0%A1%E9%AA%8C%E4%B8%8E%E9%BB%98%E8%AE%A4%E5%80%BC" aria-hidden="true">#</a></h2>
+<p>Claude HUD 在加载时会校验每个配置值。无效值会静默回退到默认值——HUD 不会因为错误的配置而崩溃。</p>
+<table>
+<thead>
+<tr>
+<th>字段</th>
+<th>校验规则</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>lineLayout</code></td>
+<td>必须为 <code>&quot;expanded&quot;</code> 或 <code>&quot;compact&quot;</code></td>
+</tr>
+<tr>
+<td><code>pathLevels</code></td>
+<td>必须为 <code>1</code>、<code>2</code> 或 <code>3</code></td>
+</tr>
+<tr>
+<td><code>contextValue</code></td>
+<td>必须为 <code>&quot;percent&quot;</code>、<code>&quot;tokens&quot;</code> 或 <code>&quot;remaining&quot;</code></td>
+</tr>
+<tr>
+<td><code>autocompactBuffer</code></td>
+<td>必须为 <code>&quot;enabled&quot;</code> 或 <code>&quot;disabled&quot;</code></td>
+</tr>
+<tr>
+<td><code>elementOrder</code></td>
+<td>已知元素名称的数组；为空或无效时重置为默认值</td>
+</tr>
+<tr>
+<td>颜色值</td>
+<td>必须为七种支持的颜色名称之一</td>
+</tr>
+<tr>
+<td>阈值</td>
+<td>限制在 0-100 范围内</td>
+</tr>
+<tr>
+<td>缓存 TTL</td>
+<td>必须为正整数</td>
+</tr>
+</tbody>
+</table>
+<h3 id="%E6%97%A7%E7%89%88%E9%85%8D%E7%BD%AE%E8%BF%81%E7%A7%BB" tabindex="-1">旧版配置迁移 <a class="header-anchor" href="#%E6%97%A7%E7%89%88%E9%85%8D%E7%BD%AE%E8%BF%81%E7%A7%BB" aria-hidden="true">#</a></h3>
+<p>如果你有旧版 Claude HUD（v0.0.x）的配置文件，<code>layout</code> 字段会自动迁移：</p>
+<ul>
+<li><code>&quot;layout&quot;: &quot;separators&quot;</code> 变为 <code>lineLayout: &quot;compact&quot;</code> 且 <code>showSeparators: true</code></li>
+<li><code>&quot;layout&quot;: &quot;default&quot;</code> 变为 <code>lineLayout: &quot;compact&quot;</code> 且 <code>showSeparators: false</code></li>
+</ul>
+<p>无需手动迁移。</p>
+<hr>
+<h2 id="%E7%9B%B8%E5%85%B3%E4%B8%BB%E9%A2%98" tabindex="-1">相关主题 <a class="header-anchor" href="#%E7%9B%B8%E5%85%B3%E4%B8%BB%E9%A2%98" aria-hidden="true">#</a></h2>
+<ul>
+<li><a href="hud-elements.html">HUD 元素</a> — 显示中每个指示器的详细指南</li>
+<li><a href="troubleshooting.html">故障排除</a> — 修复配置相关问题</li>
+<li><a href="overview.html">概览</a> — Claude HUD 是什么以及为什么重要</li>
+</ul>
+</main>
+    <nav data-ds="toc"><div class="toc-title">本页内容</div><ul><li><a href="#%E9%85%8D%E7%BD%AE%E6%96%B9%E5%BC%8F">配置方式</a></li><ul><li><a href="#%E4%BA%A4%E4%BA%92%E5%BC%8F%E8%AE%BE%E7%BD%AE">交互式设置</a></li><li><a href="#%E6%89%8B%E5%8A%A8%E7%BC%96%E8%BE%91">手动编辑</a></li></ul><li><a href="#%E9%A2%84%E8%AE%BE">预设</a></li><li><a href="#%E5%B8%83%E5%B1%80%E9%80%89%E9%A1%B9">布局选项</a></li><ul><li><a href="#%E8%A1%8C%E5%B8%83%E5%B1%80">行布局</a></li><li><a href="#%E5%88%86%E9%9A%94%E7%AC%A6">分隔符</a></li><li><a href="#%E9%A1%B9%E7%9B%AE%E8%B7%AF%E5%BE%84%E6%B7%B1%E5%BA%A6">项目路径深度</a></li><li><a href="#%E5%85%83%E7%B4%A0%E9%A1%BA%E5%BA%8F">元素顺序</a></li></ul><li><a href="#%E6%98%BE%E7%A4%BA%E5%BC%80%E5%85%B3">显示开关</a></li><ul><li><a href="#%E4%BC%9A%E8%AF%9D%E4%BF%A1%E6%81%AF">会话信息</a></li><li><a href="#%E4%B8%8A%E4%B8%8B%E6%96%87%E6%98%BE%E7%A4%BA">上下文显示</a></li><li><a href="#%E7%94%A8%E9%87%8F%E9%99%90%E5%88%B6">用量限制</a></li><li><a href="#%E6%B4%BB%E5%8A%A8%E8%A1%8C">活动行</a></li><li><a href="#%E8%87%AA%E5%8A%A8%E5%8E%8B%E7%BC%A9%E7%BC%93%E5%86%B2%E5%8C%BA">自动压缩缓冲区</a></li></ul><li><a href="#git-%E7%8A%B6%E6%80%81">Git 状态</a></li><li><a href="#%E9%A2%9C%E8%89%B2">颜色</a></li><ul><li><a href="#%E5%8F%AF%E7%94%A8%E9%A2%9C%E8%89%B2%E5%90%8D%E7%A7%B0">可用颜色名称</a></li></ul><li><a href="#%E7%94%A8%E9%87%8F%E7%BC%93%E5%AD%98">用量缓存</a></li><li><a href="#%E5%AE%8C%E6%95%B4%E7%A4%BA%E4%BE%8B">完整示例</a></li><li><a href="#%E6%A0%A1%E9%AA%8C%E4%B8%8E%E9%BB%98%E8%AE%A4%E5%80%BC">校验与默认值</a></li><ul><li><a href="#%E6%97%A7%E7%89%88%E9%85%8D%E7%BD%AE%E8%BF%81%E7%A7%BB">旧版配置迁移</a></li></ul><li><a href="#%E7%9B%B8%E5%85%B3%E4%B8%BB%E9%A2%98">相关主题</a></li></ul></nav>
+  </div>
+  <footer data-ds="footer">
+    <a href="https://docsmith.aigne.io/" target="_blank" rel="noopener noreferrer" class="docsmith-badge">
+      <svg class="docsmith-badge-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+        <polyline points="14 2 14 8 20 8"></polyline>
+        <line x1="16" y1="13" x2="8" y2="13"></line>
+        <line x1="16" y1="17" x2="8" y2="17"></line>
+        <polyline points="10 9 9 9 8 9"></polyline>
+      </svg>
+      <span>Built with <strong>AIGNE DocSmith</strong></span>
+    </a>
+  </footer>
+
+  <script>document.addEventListener('DOMContentLoaded', function() {
+    if (typeof hljs !== 'undefined') hljs.highlightAll();
+  });</script>
+</body>
+</html>

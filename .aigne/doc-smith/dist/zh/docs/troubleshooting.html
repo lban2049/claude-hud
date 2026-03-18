@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>故障排除 - claude-hud</title>
+  <meta name="description" content="">
+  <meta property="og:title" content="故障排除">
+  <meta property="og:description" content="">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+  <link rel="stylesheet" href="../../assets/docsmith.css">
+  <link rel="stylesheet" href="../../assets/theme.css">
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github-dark.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js" defer></script>
+  <script src="../../assets/nav.js" defer></script>
+  <script>
+    // Initialize theme from localStorage or system preference
+    (function() {
+      const stored = localStorage.getItem('docsmith-theme');
+      if (stored) {
+        document.documentElement.setAttribute('data-theme', stored);
+      } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      }
+    })();
+
+    function toggleTheme() {
+      const html = document.documentElement;
+      const current = html.getAttribute('data-theme');
+      const next = current === 'dark' ? 'light' : 'dark';
+      html.setAttribute('data-theme', next);
+      localStorage.setItem('docsmith-theme', next);
+    }
+  </script>
+</head>
+<body data-ds-path="/troubleshooting">
+  <header data-ds="header">
+    <a href="/zh/index.html" class="site-title">claude-hud</a>
+    <div class="header-controls">
+
+    <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
+      <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="5"></circle>
+        <line x1="12" y1="1" x2="12" y2="3"></line>
+        <line x1="12" y1="21" x2="12" y2="23"></line>
+        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+        <line x1="1" y1="12" x2="3" y2="12"></line>
+        <line x1="21" y1="12" x2="23" y2="12"></line>
+        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+      </svg>
+      <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+      </svg>
+    </button>
+    </div>
+  </header>
+  <div data-ds="layout">
+    <aside data-ds="sidebar"><!-- nav.js 渲染 --></aside>
+    <main data-ds="content"><h1 id="%E6%95%85%E9%9A%9C%E6%8E%92%E9%99%A4" tabindex="-1">故障排除 <a class="header-anchor" href="#%E6%95%85%E9%9A%9C%E6%8E%92%E9%99%A4" aria-hidden="true">#</a></h1>
+<p>修复 Claude HUD 安装、显示、配置以及平台特定问题。如果你遇到本文未涵盖的问题，请查看 <a href="https://github.com/jarrodwatts/claude-hud/issues">GitHub Issues</a> 了解已知问题和解决方法。</p>
+<p><strong>前置条件：</strong> Claude HUD 已安装并配置。如果你尚未完成设置，请参阅<a href="getting-started.html">快速开始</a>。</p>
+<hr>
+<h2 id="%E5%AE%89%E8%A3%85%E9%97%AE%E9%A2%98" tabindex="-1">安装问题 <a class="header-anchor" href="#%E5%AE%89%E8%A3%85%E9%97%AE%E9%A2%98" aria-hidden="true">#</a></h2>
+<h3 id="linux%EF%BC%9Aexdev%3A-cross-device-link-not-permitted" tabindex="-1">Linux：<code>EXDEV: cross-device link not permitted</code> <a class="header-anchor" href="#linux%EF%BC%9Aexdev%3A-cross-device-link-not-permitted" aria-hidden="true">#</a></h3>
+<p>在 Linux 上，<code>/tmp</code> 通常挂载为独立的文件系统（tmpfs）。当 Claude Code 尝试将插件从临时目录移动到安装位置时，跨设备移动会失败。</p>
+<p><strong>解决方法：</strong> 在启动 Claude Code 之前，将 <code>TMPDIR</code> 设置为同一文件系统上的位置：</p>
+<pre><code class="language-bash">mkdir -p ~/.cache/tmp &amp;&amp; TMPDIR=~/.cache/tmp claude
+</code></pre>
+<p>然后在该会话中安装插件：</p>
+<pre><code>/plugin marketplace add jarrodwatts/claude-hud
+/plugin install claude-hud
+</code></pre>
+<p>这是 <a href="https://github.com/anthropics/claude-code/issues/14799">Claude Code 平台限制</a>，而非 Claude HUD 的问题。你只需要在安装时使用 <code>TMPDIR</code> 解决方法——之后的会话可以正常工作。</p>
+<h3 id="%E6%8F%92%E4%BB%B6%E5%AE%89%E8%A3%85%E5%A4%B1%E8%B4%A5%E6%88%96%E8%B6%85%E6%97%B6" tabindex="-1">插件安装失败或超时 <a class="header-anchor" href="#%E6%8F%92%E4%BB%B6%E5%AE%89%E8%A3%85%E5%A4%B1%E8%B4%A5%E6%88%96%E8%B6%85%E6%97%B6" aria-hidden="true">#</a></h3>
+<p>如果 <code>/plugin install claude-hud</code> 挂起或失败：</p>
+<ol>
+<li><strong>检查 Claude Code 版本</strong>——Claude HUD 需要 v1.0.80 或更高版本：<pre><code class="language-bash">claude --version
+</code></pre>
+</li>
+<li><strong>验证市场已注册：</strong><pre><code>/plugin marketplace list
+</code></pre>
+如果缺少 <code>jarrodwatts/claude-hud</code>，请重新添加：<pre><code>/plugin marketplace add jarrodwatts/claude-hud
+</code></pre>
+</li>
+<li><strong>检查网络连接</strong>——安装过程会从 GitHub 获取插件。代理或防火墙规则可能会阻止访问。</li>
+<li><strong>尝试全新安装</strong>——移除部分安装并重试：<pre><code>/plugin uninstall claude-hud
+/plugin install claude-hud
+</code></pre>
+</li>
+</ol>
+<hr>
+<h2 id="%E7%8A%B6%E6%80%81%E6%A0%8F%E6%9C%AA%E6%98%BE%E7%A4%BA" tabindex="-1">状态栏未显示 <a class="header-anchor" href="#%E7%8A%B6%E6%80%81%E6%A0%8F%E6%9C%AA%E6%98%BE%E7%A4%BA" aria-hidden="true">#</a></h2>
+<p>如果安装后 HUD 未显示，请按顺序逐一排查。</p>
+<h3 id="%E6%AD%A5%E9%AA%A4-1%EF%BC%9A%E9%AA%8C%E8%AF%81%E6%8F%92%E4%BB%B6%E5%B7%B2%E5%AE%89%E8%A3%85" tabindex="-1">步骤 1：验证插件已安装 <a class="header-anchor" href="#%E6%AD%A5%E9%AA%A4-1%EF%BC%9A%E9%AA%8C%E8%AF%81%E6%8F%92%E4%BB%B6%E5%B7%B2%E5%AE%89%E8%A3%85" aria-hidden="true">#</a></h3>
+<pre><code>/plugin list
+</code></pre>
+<p>输出中应包含 <code>claude-hud</code>。如果没有，请返回<a href="getting-started.html">快速开始</a>进行安装。</p>
+<h3 id="%E6%AD%A5%E9%AA%A4-2%EF%BC%9A%E8%BF%90%E8%A1%8C%E8%AE%BE%E7%BD%AE" tabindex="-1">步骤 2：运行设置 <a class="header-anchor" href="#%E6%AD%A5%E9%AA%A4-2%EF%BC%9A%E8%BF%90%E8%A1%8C%E8%AE%BE%E7%BD%AE" aria-hidden="true">#</a></h3>
+<p>状态栏需要在 <code>~/.claude/settings.json</code> 中添加配置条目。运行：</p>
+<pre><code>/claude-hud:setup
+</code></pre>
+<p>这会注册状态栏命令，使 Claude Code 在每个渲染周期调用 HUD。</p>
+<h3 id="%E6%AD%A5%E9%AA%A4-3%EF%BC%9A%E6%A3%80%E6%9F%A5-claude-code-%E7%89%88%E6%9C%AC" tabindex="-1">步骤 3：检查 Claude Code 版本 <a class="header-anchor" href="#%E6%AD%A5%E9%AA%A4-3%EF%BC%9A%E6%A3%80%E6%9F%A5-claude-code-%E7%89%88%E6%9C%AC" aria-hidden="true">#</a></h3>
+<p>Claude HUD 使用 Claude Code v1.0.80 引入的状态栏插件 API。旧版本会静默忽略该配置。</p>
+<pre><code class="language-bash">claude --version
+</code></pre>
+<p>如果你的版本低于 1.0.80，请先更新 Claude Code。</p>
+<h3 id="%E6%AD%A5%E9%AA%A4-4%EF%BC%9A%E6%A3%80%E6%9F%A5%E9%94%99%E8%AF%AF" tabindex="-1">步骤 4：检查错误 <a class="header-anchor" href="#%E6%AD%A5%E9%AA%A4-4%EF%BC%9A%E6%A3%80%E6%9F%A5%E9%94%99%E8%AF%AF" aria-hidden="true">#</a></h3>
+<p>如果 HUD 短暂显示 <code>[claude-hud] Initializing...</code> 后消失，插件可能崩溃了。手动测试：</p>
+<pre><code class="language-bash">echo '{&quot;model&quot;:{&quot;display_name&quot;:&quot;Opus&quot;},&quot;context_window&quot;:{&quot;current_usage&quot;:{&quot;input_tokens&quot;:45000},&quot;context_window_size&quot;:200000}}' | node ~/.claude/plugins/claude-hud/dist/index.js
+</code></pre>
+<p>如果有输出，说明插件本身正常工作，问题出在状态栏配置上。如果抛出错误，请检查是否安装了 Node.js 18+。</p>
+<hr>
+<h2 id="%E7%94%A8%E9%87%8F%E6%98%BE%E7%A4%BA%E9%97%AE%E9%A2%98" tabindex="-1">用量显示问题 <a class="header-anchor" href="#%E7%94%A8%E9%87%8F%E6%98%BE%E7%A4%BA%E9%97%AE%E9%A2%98" aria-hidden="true">#</a></h2>
+<p>用量显示展示你在 Claude Pro、Max 和 Team 订阅中的速率限制消耗情况，与上下文栏显示在同一行。</p>
+<h3 id="%E7%94%A8%E9%87%8F%E6%9C%AA%E6%98%BE%E7%A4%BA" tabindex="-1">用量未显示 <a class="header-anchor" href="#%E7%94%A8%E9%87%8F%E6%9C%AA%E6%98%BE%E7%A4%BA" aria-hidden="true">#</a></h3>
+<p>以下情况会导致用量数据无法显示：</p>
+<table>
+<thead>
+<tr>
+<th>情况</th>
+<th>用量隐藏原因</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>API 密钥认证</td>
+<td>按 token 付费的用户没有速率限制可显示</td>
+</tr>
+<tr>
+<td>AWS Bedrock 模型</td>
+<td>用量在 AWS 中管理，而非通过 Anthropic 的 API</td>
+</tr>
+<tr>
+<td>自定义 <code>ANTHROPIC_BASE_URL</code></td>
+<td>Anthropic OAuth 用量 API 可能不适用</td>
+</tr>
+<tr>
+<td><code>display.showUsage: false</code></td>
+<td>在配置中被显式禁用</td>
+</tr>
+</tbody>
+</table>
+<p><strong>解决方法：</strong></p>
+<ol>
+<li>确认你使用 Pro、Max 或 Team 账户登录（而非 API 密钥）。</li>
+<li>检查配置文件 <code>~/.claude/plugins/claude-hud/config.json</code>，确保 <code>display.showUsage</code> 未设置为 <code>false</code>。</li>
+<li>如果你使用 AWS Bedrock，用量显示会被有意隐藏——HUD 会显示 <code>Bedrock</code> 代替。</li>
+</ol>
+<h3 id="%E7%94%A8%E9%87%8F%E6%98%BE%E7%A4%BA%E8%BF%87%E6%97%B6%E6%95%B0%E6%8D%AE" tabindex="-1">用量显示过时数据 <a class="header-anchor" href="#%E7%94%A8%E9%87%8F%E6%98%BE%E7%A4%BA%E8%BF%87%E6%97%B6%E6%95%B0%E6%8D%AE" aria-hidden="true">#</a></h3>
+<p>HUD 会缓存用量 API 响应以减少网络请求：</p>
+<ul>
+<li><strong>成功响应：</strong>缓存 60 秒（可通过 <code>usage.cacheTtlSeconds</code> 配置）</li>
+<li><strong>失败响应：</strong>缓存 15 秒（可通过 <code>usage.failureCacheTtlSeconds</code> 配置）</li>
+</ul>
+<p>如果需要更实时的数据，请降低配置中的缓存 TTL：</p>
+<pre><code class="language-json">{
+  &quot;usage&quot;: {
+    &quot;cacheTtlSeconds&quot;: 30
+  }
+}
+</code></pre>
+<h3 id="%E4%BB%A3%E7%90%86%E5%92%8C%E7%BD%91%E7%BB%9C%E9%97%AE%E9%A2%98" tabindex="-1">代理和网络问题 <a class="header-anchor" href="#%E4%BB%A3%E7%90%86%E5%92%8C%E7%BD%91%E7%BB%9C%E9%97%AE%E9%A2%98" aria-hidden="true">#</a></h3>
+<p>如果你在企业代理后面，用量 API 调用可能会静默失败。设置相应的代理环境变量：</p>
+<pre><code class="language-bash">export HTTPS_PROXY=http://proxy.example.com:8080
+</code></pre>
+<p>你也可以根据需要使用 <code>HTTP_PROXY</code>、<code>ALL_PROXY</code> 或 <code>NO_PROXY</code>。对于高延迟环境，增加用量 API 超时时间：</p>
+<pre><code class="language-bash">export CLAUDE_HUD_USAGE_TIMEOUT_MS=10000
+</code></pre>
+<hr>
+<h2 id="%E9%85%8D%E7%BD%AE%E9%97%AE%E9%A2%98" tabindex="-1">配置问题 <a class="header-anchor" href="#%E9%85%8D%E7%BD%AE%E9%97%AE%E9%A2%98" aria-hidden="true">#</a></h2>
+<h3 id="%E9%85%8D%E7%BD%AE%E6%9C%AA%E7%94%9F%E6%95%88" tabindex="-1">配置未生效 <a class="header-anchor" href="#%E9%85%8D%E7%BD%AE%E6%9C%AA%E7%94%9F%E6%95%88" aria-hidden="true">#</a></h3>
+<p>如果你的配置更改未反映在 HUD 中：</p>
+<ol>
+<li>
+<p><strong>检查 JSON 语法错误。</strong>无效的 JSON 会静默回退到默认值。验证你的配置文件：</p>
+<pre><code class="language-bash">cat ~/.claude/plugins/claude-hud/config.json | python3 -m json.tool
+</code></pre>
+<p>如果输出错误信息，请修复 JSON 语法。</p>
+</li>
+<li>
+<p><strong>验证有效值。</strong>某些选项有严格的允许值：</p>
+<ul>
+<li><code>lineLayout</code> 必须为 <code>&quot;expanded&quot;</code> 或 <code>&quot;compact&quot;</code></li>
+<li><code>pathLevels</code> 必须为 <code>1</code>、<code>2</code> 或 <code>3</code></li>
+<li><code>display.contextValue</code> 必须为 <code>&quot;percent&quot;</code>、<code>&quot;tokens&quot;</code> 或 <code>&quot;remaining&quot;</code></li>
+</ul>
+</li>
+<li>
+<p><strong>从头重新生成。</strong>删除配置并使用引导式设置：</p>
+<pre><code class="language-bash">rm ~/.claude/plugins/claude-hud/config.json
+</code></pre>
+<p>然后在 Claude Code 中：</p>
+<pre><code>/claude-hud:configure
+</code></pre>
+</li>
+</ol>
+<h3 id="%E6%89%8B%E5%8A%A8%E7%BC%96%E8%BE%91%E8%A2%AB%E8%A6%86%E7%9B%96" tabindex="-1">手动编辑被覆盖 <a class="header-anchor" href="#%E6%89%8B%E5%8A%A8%E7%BC%96%E8%BE%91%E8%A2%AB%E8%A6%86%E7%9B%96" aria-hidden="true">#</a></h3>
+<p>运行 <code>/claude-hud:configure</code> 会保留手动设置，如 <code>colors.*</code>、<code>pathLevels</code> 和阈值覆盖。但如果你发现意外重置：</p>
+<ul>
+<li>确保你编辑的是正确的文件：<code>~/.claude/plugins/claude-hud/config.json</code></li>
+<li>在运行配置命令之前备份你的配置</li>
+<li>引导流程未涵盖的高级设置（如 <code>colors</code> 和 <code>usage.cacheTtlSeconds</code>）会保持不变</li>
+</ul>
+<hr>
+<h2 id="%E6%98%BE%E7%A4%BA%E9%97%AE%E9%A2%98" tabindex="-1">显示问题 <a class="header-anchor" href="#%E6%98%BE%E7%A4%BA%E9%97%AE%E9%A2%98" aria-hidden="true">#</a></h2>
+<h3 id="git-%E7%8A%B6%E6%80%81%E7%BC%BA%E5%A4%B1" tabindex="-1">Git 状态缺失 <a class="header-anchor" href="#git-%E7%8A%B6%E6%80%81%E7%BC%BA%E5%A4%B1" aria-hidden="true">#</a></h3>
+<p>如果项目路径显示时没有 git 分支信息：</p>
+<ol>
+<li>验证你是否在 git 仓库中：<pre><code class="language-bash">git rev-parse --is-inside-work-tree
+</code></pre>
+</li>
+<li>检查配置中是否启用了 git 状态——<code>gitStatus.enabled</code> 默认为 <code>true</code>，但可能被设置为 <code>false</code>。</li>
+</ol>
+<h3 id="%E5%B7%A5%E5%85%B7%E3%80%81agent-%E6%88%96%E5%BE%85%E5%8A%9E%E4%BA%8B%E9%A1%B9%E8%A1%8C%E6%9C%AA%E6%98%BE%E7%A4%BA" tabindex="-1">工具、Agent 或待办事项行未显示 <a class="header-anchor" href="#%E5%B7%A5%E5%85%B7%E3%80%81agent-%E6%88%96%E5%BE%85%E5%8A%9E%E4%BA%8B%E9%A1%B9%E8%A1%8C%E6%9C%AA%E6%98%BE%E7%A4%BA" aria-hidden="true">#</a></h3>
+<p>这些行<strong>默认是隐藏的</strong>。在配置中启用它们：</p>
+<pre><code class="language-json">{
+  &quot;display&quot;: {
+    &quot;showTools&quot;: true,
+    &quot;showAgents&quot;: true,
+    &quot;showTodos&quot;: true
+  }
+}
+</code></pre>
+<p>或运行 <code>/claude-hud:configure</code> 并选择 <strong>Full</strong> 预设，它会启用所有选项。</p>
+<p>即使启用后，这些行也只在有活动内容时才会显示：</p>
+<ul>
+<li><strong>工具行：</strong>当 Claude 开始使用工具（Read、Edit、Grep 等）时出现</li>
+<li><strong>Agent 行：</strong>当子代理（Task 调用）正在运行时出现</li>
+<li><strong>待办事项行：</strong>当 TodoWrite 创建了任务时出现</li>
+</ul>
+<h3 id="%E4%B8%8A%E4%B8%8B%E6%96%87%E7%99%BE%E5%88%86%E6%AF%94%E4%BC%BC%E4%B9%8E%E4%B8%8D%E6%AD%A3%E7%A1%AE" tabindex="-1">上下文百分比似乎不正确 <a class="header-anchor" href="#%E4%B8%8A%E4%B8%8B%E6%96%87%E7%99%BE%E5%88%86%E6%AF%94%E4%BC%BC%E4%B9%8E%E4%B8%8D%E6%AD%A3%E7%A1%AE" aria-hidden="true">#</a></h3>
+<p>上下文百分比直接来自 Claude Code 的原生 token 数据——不是估算值。计算公式为：</p>
+<pre><code>(input_tokens / context_window_size) × 100
+</code></pre>
+<p>如果数值看起来不对，请考虑以下因素：</p>
+<ul>
+<li>Claude Code 可能会为较新的 1M 上下文会话报告更大的上下文窗口</li>
+<li>Token 计数包括完整对话、系统提示和工具结果</li>
+<li>百分比大约每 300ms 更新一次，短暂波动是正常的</li>
+</ul>
+<h3 id="%E9%AB%98%E4%B8%8A%E4%B8%8B%E6%96%87%E6%97%B6%E7%9A%84-token-%E5%88%86%E8%A7%A3" tabindex="-1">高上下文时的 Token 分解 <a class="header-anchor" href="#%E9%AB%98%E4%B8%8A%E4%B8%8B%E6%96%87%E6%97%B6%E7%9A%84-token-%E5%88%86%E8%A7%A3" aria-hidden="true">#</a></h3>
+<p>当上下文使用超过 85% 时，HUD 会自动显示 token 分解信息，帮助你了解空间消耗情况。此功能由 <code>display.showTokenBreakdown</code> 控制（默认：<code>true</code>）。</p>
+<p>要禁用它：</p>
+<pre><code class="language-json">{
+  &quot;display&quot;: {
+    &quot;showTokenBreakdown&quot;: false
+  }
+}
+</code></pre>
+<hr>
+<h2 id="%E5%B9%B3%E5%8F%B0%E7%89%B9%E5%AE%9A%E9%97%AE%E9%A2%98" tabindex="-1">平台特定问题 <a class="header-anchor" href="#%E5%B9%B3%E5%8F%B0%E7%89%B9%E5%AE%9A%E9%97%AE%E9%A2%98" aria-hidden="true">#</a></h2>
+<h3 id="macos" tabindex="-1">macOS <a class="header-anchor" href="#macos" aria-hidden="true">#</a></h3>
+<p>Claude HUD 在 macOS 上通常没有问题。如果你遇到显示问题：</p>
+<ul>
+<li>确保你的终端支持 ANSI 颜色代码（Terminal.app、iTerm2、Warp 和 Alacritty 都支持）</li>
+<li>如果颜色显示不正确，请检查终端是否设置为 <code>xterm-256color</code> 或类似选项</li>
+</ul>
+<h3 id="linux" tabindex="-1">Linux <a class="header-anchor" href="#linux" aria-hidden="true">#</a></h3>
+<p>除了上面描述的 <code>EXDEV</code> 安装问题外：</p>
+<ul>
+<li>一些精简终端模拟器可能无法正确渲染 ANSI 颜色</li>
+<li>如果在容器或远程环境中运行，请确保运行时路径中有 Node.js 18+</li>
+</ul>
+<h3 id="windows-(wsl)" tabindex="-1">Windows (WSL) <a class="header-anchor" href="#windows-(wsl)" aria-hidden="true">#</a></h3>
+<p>Claude HUD 可在 WSL（Windows Subsystem for Linux）中使用。Linux 相关的注意事项同样适用：</p>
+<ul>
+<li>如果安装失败，使用 <code>TMPDIR</code> 解决方法</li>
+<li>确保在 WSL 内安装了 Node.js 18+，而非 Windows 版本</li>
+</ul>
+<hr>
+<h2 id="%E8%8E%B7%E5%8F%96%E5%B8%AE%E5%8A%A9" tabindex="-1">获取帮助 <a class="header-anchor" href="#%E8%8E%B7%E5%8F%96%E5%B8%AE%E5%8A%A9" aria-hidden="true">#</a></h2>
+<p>如果以上方案均未解决你的问题：</p>
+<ol>
+<li><strong>搜索现有问题：</strong><a href="https://github.com/jarrodwatts/claude-hud/issues">github.com/jarrodwatts/claude-hud/issues</a></li>
+<li><strong>提交新问题</strong>，附带以下信息：
+<ul>
+<li>你的 Claude Code 版本（<code>claude --version</code>）</li>
+<li>你的 Node.js 版本（<code>node --version</code>）</li>
+<li>你的操作系统和终端</li>
+<li>"状态栏未显示"部分中手动测试命令的输出</li>
+</ul>
+</li>
+<li><strong>查看 README</strong> 获取最新更新：<a href="https://github.com/jarrodwatts/claude-hud">github.com/jarrodwatts/claude-hud</a></li>
+</ol>
+<hr>
+<h2 id="%E7%9B%B8%E5%85%B3%E4%B8%BB%E9%A2%98" tabindex="-1">相关主题 <a class="header-anchor" href="#%E7%9B%B8%E5%85%B3%E4%B8%BB%E9%A2%98" aria-hidden="true">#</a></h2>
+<ul>
+<li><a href="configuration.html">配置</a>——所有配置选项的完整参考</li>
+<li><a href="hud-elements.html">HUD 元素</a>——了解每个显示元素的含义</li>
+<li><a href="getting-started.html">快速开始</a>——安装和初始设置</li>
+<li><a href="architecture.html">架构</a>——插件底层工作原理</li>
+</ul>
+</main>
+    <nav data-ds="toc"><div class="toc-title">本页目录</div><ul><li><a href="#%E5%AE%89%E8%A3%85%E9%97%AE%E9%A2%98">安装问题</a></li><ul><li><a href="#%E6%8F%92%E4%BB%B6%E5%AE%89%E8%A3%85%E5%A4%B1%E8%B4%A5%E6%88%96%E8%B6%85%E6%97%B6">插件安装失败或超时</a></li></ul><li><a href="#%E7%8A%B6%E6%80%81%E6%A0%8F%E6%9C%AA%E6%98%BE%E7%A4%BA">状态栏未显示</a></li><ul><li><a href="#%E6%AD%A5%E9%AA%A4-1%EF%BC%9A%E9%AA%8C%E8%AF%81%E6%8F%92%E4%BB%B6%E5%B7%B2%E5%AE%89%E8%A3%85">步骤 1：验证插件已安装</a></li><li><a href="#%E6%AD%A5%E9%AA%A4-2%EF%BC%9A%E8%BF%90%E8%A1%8C%E8%AE%BE%E7%BD%AE">步骤 2：运行设置</a></li><li><a href="#%E6%AD%A5%E9%AA%A4-3%EF%BC%9A%E6%A3%80%E6%9F%A5-claude-code-%E7%89%88%E6%9C%AC">步骤 3：检查 Claude Code 版本</a></li><li><a href="#%E6%AD%A5%E9%AA%A4-4%EF%BC%9A%E6%A3%80%E6%9F%A5%E9%94%99%E8%AF%AF">步骤 4：检查错误</a></li></ul><li><a href="#%E7%94%A8%E9%87%8F%E6%98%BE%E7%A4%BA%E9%97%AE%E9%A2%98">用量显示问题</a></li><ul><li><a href="#%E7%94%A8%E9%87%8F%E6%9C%AA%E6%98%BE%E7%A4%BA">用量未显示</a></li><li><a href="#%E7%94%A8%E9%87%8F%E6%98%BE%E7%A4%BA%E8%BF%87%E6%97%B6%E6%95%B0%E6%8D%AE">用量显示过时数据</a></li><li><a href="#%E4%BB%A3%E7%90%86%E5%92%8C%E7%BD%91%E7%BB%9C%E9%97%AE%E9%A2%98">代理和网络问题</a></li></ul><li><a href="#%E9%85%8D%E7%BD%AE%E9%97%AE%E9%A2%98">配置问题</a></li><ul><li><a href="#%E9%85%8D%E7%BD%AE%E6%9C%AA%E7%94%9F%E6%95%88">配置未生效</a></li><li><a href="#%E6%89%8B%E5%8A%A8%E7%BC%96%E8%BE%91%E8%A2%AB%E8%A6%86%E7%9B%96">手动编辑被覆盖</a></li></ul><li><a href="#%E6%98%BE%E7%A4%BA%E9%97%AE%E9%A2%98">显示问题</a></li><ul><li><a href="#git-%E7%8A%B6%E6%80%81%E7%BC%BA%E5%A4%B1">Git 状态缺失</a></li><li><a href="#%E5%B7%A5%E5%85%B7%E3%80%81agent-%E6%88%96%E5%BE%85%E5%8A%9E%E4%BA%8B%E9%A1%B9%E8%A1%8C%E6%9C%AA%E6%98%BE%E7%A4%BA">工具、Agent 或待办事项行未显示</a></li><li><a href="#%E4%B8%8A%E4%B8%8B%E6%96%87%E7%99%BE%E5%88%86%E6%AF%94%E4%BC%BC%E4%B9%8E%E4%B8%8D%E6%AD%A3%E7%A1%AE">上下文百分比似乎不正确</a></li><li><a href="#%E9%AB%98%E4%B8%8A%E4%B8%8B%E6%96%87%E6%97%B6%E7%9A%84-token-%E5%88%86%E8%A7%A3">高上下文时的 Token 分解</a></li></ul><li><a href="#%E5%B9%B3%E5%8F%B0%E7%89%B9%E5%AE%9A%E9%97%AE%E9%A2%98">平台特定问题</a></li><ul><li><a href="#macos">macOS</a></li><li><a href="#linux">Linux</a></li><li><a href="#windows-(wsl)">Windows (WSL)</a></li></ul><li><a href="#%E8%8E%B7%E5%8F%96%E5%B8%AE%E5%8A%A9">获取帮助</a></li><li><a href="#%E7%9B%B8%E5%85%B3%E4%B8%BB%E9%A2%98">相关主题</a></li></ul></nav>
+  </div>
+  <footer data-ds="footer">
+    <a href="https://docsmith.aigne.io/" target="_blank" rel="noopener noreferrer" class="docsmith-badge">
+      <svg class="docsmith-badge-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+        <polyline points="14 2 14 8 20 8"></polyline>
+        <line x1="16" y1="13" x2="8" y2="13"></line>
+        <line x1="16" y1="17" x2="8" y2="17"></line>
+        <polyline points="10 9 9 9 8 9"></polyline>
+      </svg>
+      <span>Built with <strong>AIGNE DocSmith</strong></span>
+    </a>
+  </footer>
+
+  <script>document.addEventListener('DOMContentLoaded', function() {
+    if (typeof hljs !== 'undefined') hljs.highlightAll();
+  });</script>
+</body>
+</html>

@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HUD Elements - claude-hud</title>
+  <meta name="description" content="">
+  <meta property="og:title" content="HUD Elements">
+  <meta property="og:description" content="">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+  <link rel="stylesheet" href="../../assets/docsmith.css">
+  <link rel="stylesheet" href="../../assets/theme.css">
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github-dark.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js" defer></script>
+  <script src="../../assets/nav.js" defer></script>
+  <script>
+    // Initialize theme from localStorage or system preference
+    (function() {
+      const stored = localStorage.getItem('docsmith-theme');
+      if (stored) {
+        document.documentElement.setAttribute('data-theme', stored);
+      } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      }
+    })();
+
+    function toggleTheme() {
+      const html = document.documentElement;
+      const current = html.getAttribute('data-theme');
+      const next = current === 'dark' ? 'light' : 'dark';
+      html.setAttribute('data-theme', next);
+      localStorage.setItem('docsmith-theme', next);
+    }
+  </script>
+</head>
+<body data-ds-path="/hud-elements">
+  <header data-ds="header">
+    <a href="/en/index.html" class="site-title">claude-hud</a>
+    <div class="header-controls">
+      
+    <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
+      <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="5"></circle>
+        <line x1="12" y1="1" x2="12" y2="3"></line>
+        <line x1="12" y1="21" x2="12" y2="23"></line>
+        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+        <line x1="1" y1="12" x2="3" y2="12"></line>
+        <line x1="21" y1="12" x2="23" y2="12"></line>
+        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+      </svg>
+      <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+      </svg>
+    </button>
+    </div>
+  </header>
+  <div data-ds="layout">
+    <aside data-ds="sidebar"><!-- nav.js 渲染 --></aside>
+    <main data-ds="content"><h1 id="hud-elements" tabindex="-1">HUD Elements <a class="header-anchor" href="#hud-elements" aria-hidden="true">#</a></h1>
+<p>Claude HUD displays real-time information about your Claude Code session across multiple lines. Each element provides a specific piece of data — from context window health to tool activity and todo progress. This page explains every indicator, bar, and line you see in the HUD.</p>
+<blockquote>
+<p><strong>Prerequisites</strong>: You should have Claude HUD installed and running. See <a href="getting-started.html">Getting Started</a> for setup instructions.</p>
+</blockquote>
+<p><img src="../../assets/hud-elements-overview/images/en.png" alt="Claude HUD displaying all elements in expanded layout including project info, context bar, usage limits, tools, agents, and todos"></p>
+<h2 id="layout-modes" tabindex="-1">Layout Modes <a class="header-anchor" href="#layout-modes" aria-hidden="true">#</a></h2>
+<p>Claude HUD supports two layout modes that determine how elements are arranged:</p>
+<h3 id="expanded-layout-(default)" tabindex="-1">Expanded Layout (Default) <a class="header-anchor" href="#expanded-layout-(default)" aria-hidden="true">#</a></h3>
+<p>In expanded layout, each element category gets its own line. The order is controlled by the <code>elementOrder</code> configuration:</p>
+<pre><code>[Opus | Max] │ my-project git:(main*)
+Context █████░░░░░ 45% │ Usage ██░░░░░░░░ 25% (1h 30m / 5h)
+3 CLAUDE.md | 2 MCPs | 1 hooks
+◐ Edit: auth.ts | ✓ Read ×3 | ✓ Grep ×2
+◐ explore [haiku]: Finding auth code (2m 15s)
+▸ Fix authentication bug (2/5)
+</code></pre>
+<p>The seven element categories are: <code>project</code>, <code>context</code>, <code>usage</code>, <code>environment</code>, <code>tools</code>, <code>agents</code>, and <code>todos</code>. When <code>context</code> and <code>usage</code> appear next to each other in <code>elementOrder</code>, they merge onto a single line separated by <code>│</code>.</p>
+<h3 id="compact-layout" tabindex="-1">Compact Layout <a class="header-anchor" href="#compact-layout" aria-hidden="true">#</a></h3>
+<p>In compact layout, all session information collapses into a single line, with activity lines (tools, agents, todos) shown below:</p>
+<pre><code>[Opus | Max] █████░░░░░ 45% | my-project git:(main*) | 3 CLAUDE.md | ██░░░░░░░░ 25% (1h 30m / 5h) | ⏱️ 5m
+◐ Edit: auth.ts | ✓ Read ×3
+</code></pre>
+<p>Switch between layouts with:</p>
+<pre><code class="language-json">{ &quot;lineLayout&quot;: &quot;expanded&quot; }
+</code></pre>
+<pre><code class="language-json">{ &quot;lineLayout&quot;: &quot;compact&quot; }
+</code></pre>
+<h2 id="project-line" tabindex="-1">Project Line <a class="header-anchor" href="#project-line" aria-hidden="true">#</a></h2>
+<p>The project line shows your model, working directory, and git status. It appears as the first line in both layouts.</p>
+<h3 id="model-badge" tabindex="-1">Model Badge <a class="header-anchor" href="#model-badge" aria-hidden="true">#</a></h3>
+<p>Displays the active model name and billing source:</p>
+<pre><code>[Opus | Max]        ← Model name + plan (Pro/Max/Team)
+[Opus | API]        ← Model name + API key billing
+[Opus | Bedrock]    ← Model name + AWS Bedrock provider
+[Opus]              ← Model name only (no plan detected)
+</code></pre>
+<p>The model name comes from Claude Code’s stdin JSON data. The billing label is determined by:</p>
+<ol>
+<li><strong>Provider label</strong> (e.g., <code>Bedrock</code>) — shown first if available</li>
+<li><strong>Plan name</strong> (e.g., <code>Max</code>, <code>Pro</code>) — from the usage API</li>
+<li><strong>API indicator</strong> — shown as red <code>API</code> when <code>ANTHROPIC_API_KEY</code> is set</li>
+</ol>
+<p>Toggle with <code>display.showModel</code> (default: <code>true</code>).</p>
+<h3 id="project-path" tabindex="-1">Project Path <a class="header-anchor" href="#project-path" aria-hidden="true">#</a></h3>
+<p>Shows the current working directory, truncated to a configurable number of path levels:</p>
+<pre><code>my-project              ← pathLevels: 1 (default)
+apps/my-project         ← pathLevels: 2
+dev/apps/my-project     ← pathLevels: 3
+</code></pre>
+<p>Configure with:</p>
+<pre><code class="language-json">{ &quot;pathLevels&quot;: 2 }
+</code></pre>
+<p>Toggle with <code>display.showProject</code> (default: <code>true</code>).</p>
+<h3 id="git-status" tabindex="-1">Git Status <a class="header-anchor" href="#git-status" aria-hidden="true">#</a></h3>
+<p>Displays the current branch and optional change indicators:</p>
+<pre><code>git:(main)              ← Clean branch
+git:(main*)             ← Uncommitted changes (dirty)
+git:(main ↑2 ↓1)       ← Ahead/behind remote
+git:(main* !3 +1 ✘2 ?4)← Full file stats
+</code></pre>
+<p>File stat symbols:</p>
+<table>
+<thead>
+<tr>
+<th>Symbol</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>*</code></td>
+<td>Uncommitted changes exist</td>
+</tr>
+<tr>
+<td><code>↑N</code></td>
+<td>N commits ahead of remote</td>
+</tr>
+<tr>
+<td><code>↓N</code></td>
+<td>N commits behind remote</td>
+</tr>
+<tr>
+<td><code>!N</code></td>
+<td>N modified files</td>
+</tr>
+<tr>
+<td><code>+N</code></td>
+<td>N added/staged files</td>
+</tr>
+<tr>
+<td><code>✘N</code></td>
+<td>N deleted files</td>
+</tr>
+<tr>
+<td><code>?N</code></td>
+<td>N untracked files</td>
+</tr>
+</tbody>
+</table>
+<p>Configure git display:</p>
+<pre><code class="language-json">{
+  &quot;gitStatus&quot;: {
+    &quot;enabled&quot;: true,
+    &quot;showDirty&quot;: true,
+    &quot;showAheadBehind&quot;: true,
+    &quot;showFileStats&quot;: true
+  }
+}
+</code></pre>
+<h3 id="session-name" tabindex="-1">Session Name <a class="header-anchor" href="#session-name" aria-hidden="true">#</a></h3>
+<p>When enabled, shows the session slug or a custom title set via <code>/rename</code>:</p>
+<pre><code>[Opus | Max] │ my-project git:(main) │ fix-auth-flow
+</code></pre>
+<p>Toggle with <code>display.showSessionName</code> (default: <code>false</code>).</p>
+<h2 id="context-line" tabindex="-1">Context Line <a class="header-anchor" href="#context-line" aria-hidden="true">#</a></h2>
+<p>The context line shows how much of your context window is in use. This is one of the most important indicators — when context fills up, Claude Code triggers an auto-compact that clears conversation history.</p>
+<h3 id="context-bar" tabindex="-1">Context Bar <a class="header-anchor" href="#context-bar" aria-hidden="true">#</a></h3>
+<p>A 10-character visual bar that fills from left to right as context usage increases:</p>
+<pre><code>Context █████░░░░░ 45%     ← Green: healthy
+Context ███████░░░ 70%     ← Yellow: warning
+Context █████████░ 90%     ← Red: critical
+</code></pre>
+<p>Color thresholds:</p>
+<table>
+<thead>
+<tr>
+<th>Percent</th>
+<th>Color</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0-69%</td>
+<td>Green</td>
+<td>Healthy — plenty of room</td>
+</tr>
+<tr>
+<td>70-84%</td>
+<td>Yellow</td>
+<td>Warning — consider wrapping up complex tasks</td>
+</tr>
+<tr>
+<td>85-100%</td>
+<td>Red</td>
+<td>Critical — auto-compact may trigger soon</td>
+</tr>
+</tbody>
+</table>
+<p>Toggle with <code>display.showContextBar</code> (default: <code>true</code>).</p>
+<h3 id="context-value-display" tabindex="-1">Context Value Display <a class="header-anchor" href="#context-value-display" aria-hidden="true">#</a></h3>
+<p>The numeric value next to the bar can show three different formats:</p>
+<pre><code>Context █████░░░░░ 45%          ← percent (default)
+Context █████░░░░░ 45k/200k    ← tokens
+Context █████░░░░░ 55%          ← remaining
+</code></pre>
+<p>Configure with:</p>
+<pre><code class="language-json">{ &quot;display&quot;: { &quot;contextValue&quot;: &quot;percent&quot; } }
+</code></pre>
+<p>Valid values: <code>&quot;percent&quot;</code>, <code>&quot;tokens&quot;</code>, <code>&quot;remaining&quot;</code>.</p>
+<h3 id="token-breakdown" tabindex="-1">Token Breakdown <a class="header-anchor" href="#token-breakdown" aria-hidden="true">#</a></h3>
+<p>When context usage reaches 85% or higher, a token breakdown automatically appears showing input tokens and cache usage:</p>
+<pre><code>Context █████████░ 90% (in: 180k, cache: 45k)
+</code></pre>
+<p>This helps you understand what is consuming context space. Token counts are formatted as <code>k</code> (thousands) or <code>M</code> (millions).</p>
+<p>Toggle with <code>display.showTokenBreakdown</code> (default: <code>true</code>).</p>
+<h3 id="autocompact-buffer" tabindex="-1">Autocompact Buffer <a class="header-anchor" href="#autocompact-buffer" aria-hidden="true">#</a></h3>
+<p>By default, Claude HUD accounts for the autocompact buffer when calculating context percentage. This means the displayed percentage reflects usable context rather than raw usage:</p>
+<ul>
+<li><strong><code>enabled</code></strong> (default): Percentage accounts for the autocompact buffer, giving you a more accurate picture of when auto-compact will trigger</li>
+<li><strong><code>disabled</code></strong>: Shows raw token percentage without buffer adjustment</li>
+</ul>
+<pre><code class="language-json">{ &quot;display&quot;: { &quot;autocompactBuffer&quot;: &quot;disabled&quot; } }
+</code></pre>
+<h2 id="usage-line" tabindex="-1">Usage Line <a class="header-anchor" href="#usage-line" aria-hidden="true">#</a></h2>
+<p>The usage line tracks your rate limit consumption for Pro, Max, and Team plans. It displays two usage windows: 5-hour and 7-day.</p>
+<h3 id="5-hour-window" tabindex="-1">5-Hour Window <a class="header-anchor" href="#5-hour-window" aria-hidden="true">#</a></h3>
+<p>Always shown when usage data is available:</p>
+<pre><code>Usage ██░░░░░░░░ 25% (1h 30m / 5h)
+</code></pre>
+<p>The bar and percentage show how much of your 5-hour rate limit has been consumed. The time in parentheses shows when the window resets.</p>
+<h3 id="7-day-window" tabindex="-1">7-Day Window <a class="header-anchor" href="#7-day-window" aria-hidden="true">#</a></h3>
+<p>Appears when 7-day usage exceeds the <code>sevenDayThreshold</code> (default: 80%):</p>
+<pre><code>Usage ██░░░░░░░░ 25% (1h 30m / 5h) | ██████████ 85% (2d / 7d)
+</code></pre>
+<p>Configure the threshold:</p>
+<pre><code class="language-json">{ &quot;display&quot;: { &quot;sevenDayThreshold&quot;: 50 } }
+</code></pre>
+<p>Set to <code>0</code> to always show the 7-day window.</p>
+<h3 id="usage-color-scale" tabindex="-1">Usage Color Scale <a class="header-anchor" href="#usage-color-scale" aria-hidden="true">#</a></h3>
+<p>Usage bars use a separate color scale from the context bar:</p>
+<table>
+<thead>
+<tr>
+<th>Percent</th>
+<th>Color</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0-74%</td>
+<td>Bright blue</td>
+<td>Normal usage</td>
+</tr>
+<tr>
+<td>75-89%</td>
+<td>Bright magenta</td>
+<td>Approaching limit</td>
+</tr>
+<tr>
+<td>90-100%</td>
+<td>Red</td>
+<td>Near or at limit</td>
+</tr>
+</tbody>
+</table>
+<h3 id="usage-threshold" tabindex="-1">Usage Threshold <a class="header-anchor" href="#usage-threshold" aria-hidden="true">#</a></h3>
+<p>Hide the usage display when usage is below a threshold:</p>
+<pre><code class="language-json">{ &quot;display&quot;: { &quot;usageThreshold&quot;: 20 } }
+</code></pre>
+<p>With this setting, the usage line only appears when usage reaches 20% or higher.</p>
+<h3 id="limit-reached-state" tabindex="-1">Limit Reached State <a class="header-anchor" href="#limit-reached-state" aria-hidden="true">#</a></h3>
+<p>When either usage window hits 100%, the display changes to a critical warning:</p>
+<pre><code>Usage ⚠ Limit reached (resets 45m)
+</code></pre>
+<p>The reset time tells you how long until the window resets.</p>
+<h3 id="text-only-mode" tabindex="-1">Text-Only Mode <a class="header-anchor" href="#text-only-mode" aria-hidden="true">#</a></h3>
+<p>Disable usage bars to show text-only labels:</p>
+<pre><code class="language-json">{ &quot;display&quot;: { &quot;usageBarEnabled&quot;: false } }
+</code></pre>
+<p>Result:</p>
+<pre><code>Usage 5h: 25% (1h 30m) | 7d: 85% (2d)
+</code></pre>
+<h3 id="who-sees-usage" tabindex="-1">Who Sees Usage <a class="header-anchor" href="#who-sees-usage" aria-hidden="true">#</a></h3>
+<p>Usage display requires an Anthropic subscription (Pro, Max, or Team). It does not appear for:</p>
+<ul>
+<li>API key users (pay-per-token billing, no rate limits)</li>
+<li>AWS Bedrock or custom base URL users (usage managed elsewhere)</li>
+</ul>
+<p>Toggle with <code>display.showUsage</code> (default: <code>true</code>).</p>
+<h2 id="environment-line" tabindex="-1">Environment Line <a class="header-anchor" href="#environment-line" aria-hidden="true">#</a></h2>
+<p>The environment line shows counts of active Claude Code configuration sources:</p>
+<pre><code>3 CLAUDE.md | 2 rules | 4 MCPs | 1 hooks
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Indicator</th>
+<th>What It Counts</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>N CLAUDE.md</code></td>
+<td>Number of <a href="http://CLAUDE.md">CLAUDE.md</a> files loaded in the session</td>
+</tr>
+<tr>
+<td><code>N rules</code></td>
+<td>Number of active rules files</td>
+</tr>
+<tr>
+<td><code>N MCPs</code></td>
+<td>Number of connected MCP servers</td>
+</tr>
+<tr>
+<td><code>N hooks</code></td>
+<td>Number of configured hooks</td>
+</tr>
+</tbody>
+</table>
+<p>Only non-zero counts are displayed. The entire line is hidden when all counts are zero.</p>
+<h3 id="environment-threshold" tabindex="-1">Environment Threshold <a class="header-anchor" href="#environment-threshold" aria-hidden="true">#</a></h3>
+<p>Control when the environment line appears:</p>
+<pre><code class="language-json">{ &quot;display&quot;: { &quot;environmentThreshold&quot;: 3 } }
+</code></pre>
+<p>The line only shows when the total count (<a href="http://CLAUDE.md">CLAUDE.md</a> + rules + MCPs + hooks) reaches the threshold. Default is <code>0</code> (always show when there is any count).</p>
+<p>Toggle with <code>display.showConfigCounts</code> (default: <code>false</code> in expanded, varies in compact).</p>
+<h2 id="tools-line" tabindex="-1">Tools Line <a class="header-anchor" href="#tools-line" aria-hidden="true">#</a></h2>
+<p>The tools line shows real-time tool invocations during Claude’s work. It displays both currently running tools and a summary of recently completed ones.</p>
+<h3 id="running-tools" tabindex="-1">Running Tools <a class="header-anchor" href="#running-tools" aria-hidden="true">#</a></h3>
+<p>Active tools show a spinning indicator and the tool name with its target:</p>
+<pre><code>◐ Edit: auth.ts | ◐ Read: config.json
+</code></pre>
+<p>Up to 2 running tools are displayed at once. The target path is truncated to 20 characters, showing the filename when the path is too long:</p>
+<pre><code>◐ Edit: .../deeply-nested-file.ts
+</code></pre>
+<h3 id="completed-tools" tabindex="-1">Completed Tools <a class="header-anchor" href="#completed-tools" aria-hidden="true">#</a></h3>
+<p>Completed tools show a checkmark with an invocation count, sorted by frequency:</p>
+<pre><code>✓ Read ×5 | ✓ Edit ×3 | ✓ Grep ×2 | ✓ Bash ×1
+</code></pre>
+<p>Up to 4 completed tool summaries are shown, prioritizing the most frequently used tools.</p>
+<h3 id="combined-display" tabindex="-1">Combined Display <a class="header-anchor" href="#combined-display" aria-hidden="true">#</a></h3>
+<p>When both running and completed tools exist:</p>
+<pre><code>◐ Edit: auth.ts | ✓ Read ×5 | ✓ Grep ×3 | ✓ Bash ×2
+</code></pre>
+<p>The tools line is hidden when no tools have been invoked.</p>
+<p>Toggle with <code>display.showTools</code> (default: <code>false</code>).</p>
+<h2 id="agents-line" tabindex="-1">Agents Line <a class="header-anchor" href="#agents-line" aria-hidden="true">#</a></h2>
+<p>The agents line tracks sub-agents spawned by Claude Code during complex tasks. It displays both running and recently completed agents.</p>
+<h3 id="running-agents" tabindex="-1">Running Agents <a class="header-anchor" href="#running-agents" aria-hidden="true">#</a></h3>
+<p>Active agents show a spinning indicator, the agent type, optional model, description, and elapsed time:</p>
+<pre><code>◐ explore [haiku]: Finding authentication code (2m 15s)
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Part</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>◐</code></td>
+<td>Yellow spinning indicator — agent is running</td>
+</tr>
+<tr>
+<td><code>explore</code></td>
+<td>Agent type (shown in magenta)</td>
+</tr>
+<tr>
+<td><code>[haiku]</code></td>
+<td>Model being used (dimmed, optional)</td>
+</tr>
+<tr>
+<td><code>Finding authentication...</code></td>
+<td>Task description (truncated to 40 chars)</td>
+</tr>
+<tr>
+<td><code>(2m 15s)</code></td>
+<td>Elapsed time since agent started</td>
+</tr>
+</tbody>
+</table>
+<h3 id="completed-agents" tabindex="-1">Completed Agents <a class="header-anchor" href="#completed-agents" aria-hidden="true">#</a></h3>
+<p>Recently completed agents show a checkmark:</p>
+<pre><code>✓ explore [haiku]: Found 3 auth modules (45s)
+</code></pre>
+<p>Up to 2 recently completed agents are shown alongside running agents, with a maximum of 3 total entries visible at once.</p>
+<h3 id="time-format" tabindex="-1">Time Format <a class="header-anchor" href="#time-format" aria-hidden="true">#</a></h3>
+<p>Elapsed time is displayed in a human-readable format:</p>
+<table>
+<thead>
+<tr>
+<th>Duration</th>
+<th>Display</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Under 1 second</td>
+<td><code>&lt;1s</code></td>
+</tr>
+<tr>
+<td>Under 1 minute</td>
+<td><code>Ns</code> (e.g., <code>45s</code>)</td>
+</tr>
+<tr>
+<td>1 minute or more</td>
+<td><code>Nm Ns</code> (e.g., <code>2m 15s</code>)</td>
+</tr>
+</tbody>
+</table>
+<p>The agents line is hidden when no agents have been active.</p>
+<p>Toggle with <code>display.showAgents</code> (default: <code>false</code>).</p>
+<h2 id="todos-line" tabindex="-1">Todos Line <a class="header-anchor" href="#todos-line" aria-hidden="true">#</a></h2>
+<p>The todos line tracks task completion when Claude Code uses its internal todo list to manage multi-step work.</p>
+<h3 id="in-progress-todo" tabindex="-1">In-Progress Todo <a class="header-anchor" href="#in-progress-todo" aria-hidden="true">#</a></h3>
+<p>Shows the currently active todo item with a progress counter:</p>
+<pre><code>▸ Fix authentication bug (2/5)
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Part</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>▸</code></td>
+<td>Yellow pointer — this task is in progress</td>
+</tr>
+<tr>
+<td><code>Fix authentication...</code></td>
+<td>Todo content (truncated to 50 chars)</td>
+</tr>
+<tr>
+<td><code>(2/5)</code></td>
+<td>Completed / total todo count</td>
+</tr>
+</tbody>
+</table>
+<h3 id="all-complete" tabindex="-1">All Complete <a class="header-anchor" href="#all-complete" aria-hidden="true">#</a></h3>
+<p>When every todo is marked done:</p>
+<pre><code>✓ All todos complete (5/5)
+</code></pre>
+<p>The todos line is hidden when no todo items exist or when no item is currently in progress (and not all are complete).</p>
+<p>Toggle with <code>display.showTodos</code> (default: <code>false</code>).</p>
+<h2 id="additional-indicators" tabindex="-1">Additional Indicators <a class="header-anchor" href="#additional-indicators" aria-hidden="true">#</a></h2>
+<h3 id="session-duration" tabindex="-1">Session Duration <a class="header-anchor" href="#session-duration" aria-hidden="true">#</a></h3>
+<p>Shows how long the current session has been running:</p>
+<pre><code>⏱️ 5m
+</code></pre>
+<p>Toggle with <code>display.showDuration</code> (default: <code>false</code>).</p>
+<h3 id="output-speed" tabindex="-1">Output Speed <a class="header-anchor" href="#output-speed" aria-hidden="true">#</a></h3>
+<p>Shows the token output speed in tokens per second:</p>
+<pre><code>out: 42.1 tok/s
+</code></pre>
+<p>Toggle with <code>display.showSpeed</code> (default: <code>false</code>).</p>
+<h2 id="color-customization" tabindex="-1">Color Customization <a class="header-anchor" href="#color-customization" aria-hidden="true">#</a></h2>
+<p>All color-coded elements can be customized through the <code>colors</code> configuration:</p>
+<pre><code class="language-json">{
+  &quot;colors&quot;: {
+    &quot;context&quot;: &quot;cyan&quot;,
+    &quot;usage&quot;: &quot;cyan&quot;,
+    &quot;warning&quot;: &quot;yellow&quot;,
+    &quot;usageWarning&quot;: &quot;magenta&quot;,
+    &quot;critical&quot;: &quot;red&quot;
+  }
+}
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Color Key</th>
+<th>Applies To</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>context</code></td>
+<td>Context bar and percentage (normal range)</td>
+<td><code>green</code></td>
+</tr>
+<tr>
+<td><code>usage</code></td>
+<td>Usage bar and percentage (normal range)</td>
+<td><code>brightBlue</code></td>
+</tr>
+<tr>
+<td><code>warning</code></td>
+<td>Context at 70-84%, usage warnings</td>
+<td><code>yellow</code></td>
+</tr>
+<tr>
+<td><code>usageWarning</code></td>
+<td>Usage at 75-89%</td>
+<td><code>brightMagenta</code></td>
+</tr>
+<tr>
+<td><code>critical</code></td>
+<td>Context at 85%+, usage at 90%+, limit reached</td>
+<td><code>red</code></td>
+</tr>
+</tbody>
+</table>
+<p>Available color names: <code>red</code>, <code>green</code>, <code>yellow</code>, <code>magenta</code>, <code>cyan</code>, <code>brightBlue</code>, <code>brightMagenta</code>.</p>
+<h2 id="element-order" tabindex="-1">Element Order <a class="header-anchor" href="#element-order" aria-hidden="true">#</a></h2>
+<p>In expanded layout, control which elements appear and in what order:</p>
+<pre><code class="language-json">{
+  &quot;elementOrder&quot;: [&quot;project&quot;, &quot;tools&quot;, &quot;context&quot;, &quot;usage&quot;, &quot;environment&quot;, &quot;agents&quot;, &quot;todos&quot;]
+}
+</code></pre>
+<p>Omitting an element from the array hides it in expanded mode. The default order is:</p>
+<ol>
+<li><code>project</code> — Model badge, project path, git status</li>
+<li><code>context</code> — Context window bar and percentage</li>
+<li><code>usage</code> — Rate limit consumption</li>
+<li><code>environment</code> — Configuration source counts</li>
+<li><code>tools</code> — Tool invocation activity</li>
+<li><code>agents</code> — Sub-agent tracking</li>
+<li><code>todos</code> — Todo progress</li>
+</ol>
+<h3 id="separators" tabindex="-1">Separators <a class="header-anchor" href="#separators" aria-hidden="true">#</a></h3>
+<p>Add a visual separator line between info elements and activity elements:</p>
+<pre><code class="language-json">{ &quot;showSeparators&quot;: true }
+</code></pre>
+<pre><code>[Opus | Max] │ my-project git:(main)
+Context █████░░░░░ 45% │ Usage ██░░░░░░░░ 25%
+────────────────────────────────
+◐ Edit: auth.ts | ✓ Read ×3
+▸ Fix authentication bug (2/5)
+</code></pre>
+<h2 id="related-topics" tabindex="-1">Related Topics <a class="header-anchor" href="#related-topics" aria-hidden="true">#</a></h2>
+<ul>
+<li><a href="configuration.html">Configuration</a> — Full reference for all configuration options</li>
+<li><a href="getting-started.html">Getting Started</a> — Install and set up Claude HUD</li>
+<li><a href="troubleshooting.html">Troubleshooting</a> — Fix display issues and missing elements</li>
+<li><a href="architecture.html">Architecture</a> — How the rendering pipeline works under the hood</li>
+</ul>
+</main>
+    <nav data-ds="toc"><div class="toc-title">On this page</div><ul><li><a href="#layout-modes">Layout Modes</a></li><ul><li><a href="#expanded-layout-(default)">Expanded Layout (Default)</a></li><li><a href="#compact-layout">Compact Layout</a></li></ul><li><a href="#project-line">Project Line</a></li><ul><li><a href="#model-badge">Model Badge</a></li><li><a href="#project-path">Project Path</a></li><li><a href="#git-status">Git Status</a></li><li><a href="#session-name">Session Name</a></li></ul><li><a href="#context-line">Context Line</a></li><ul><li><a href="#context-bar">Context Bar</a></li><li><a href="#context-value-display">Context Value Display</a></li><li><a href="#token-breakdown">Token Breakdown</a></li><li><a href="#autocompact-buffer">Autocompact Buffer</a></li></ul><li><a href="#usage-line">Usage Line</a></li><ul><li><a href="#5-hour-window">5-Hour Window</a></li><li><a href="#7-day-window">7-Day Window</a></li><li><a href="#usage-color-scale">Usage Color Scale</a></li><li><a href="#usage-threshold">Usage Threshold</a></li><li><a href="#limit-reached-state">Limit Reached State</a></li><li><a href="#text-only-mode">Text-Only Mode</a></li><li><a href="#who-sees-usage">Who Sees Usage</a></li></ul><li><a href="#environment-line">Environment Line</a></li><ul><li><a href="#environment-threshold">Environment Threshold</a></li></ul><li><a href="#tools-line">Tools Line</a></li><ul><li><a href="#running-tools">Running Tools</a></li><li><a href="#completed-tools">Completed Tools</a></li><li><a href="#combined-display">Combined Display</a></li></ul><li><a href="#agents-line">Agents Line</a></li><ul><li><a href="#running-agents">Running Agents</a></li><li><a href="#completed-agents">Completed Agents</a></li><li><a href="#time-format">Time Format</a></li></ul><li><a href="#todos-line">Todos Line</a></li><ul><li><a href="#in-progress-todo">In-Progress Todo</a></li><li><a href="#all-complete">All Complete</a></li></ul><li><a href="#additional-indicators">Additional Indicators</a></li><ul><li><a href="#session-duration">Session Duration</a></li><li><a href="#output-speed">Output Speed</a></li></ul><li><a href="#color-customization">Color Customization</a></li><li><a href="#element-order">Element Order</a></li><ul><li><a href="#separators">Separators</a></li></ul><li><a href="#related-topics">Related Topics</a></li></ul></nav>
+  </div>
+  <footer data-ds="footer">
+    <a href="https://docsmith.aigne.io/" target="_blank" rel="noopener noreferrer" class="docsmith-badge">
+      <svg class="docsmith-badge-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+        <polyline points="14 2 14 8 20 8"></polyline>
+        <line x1="16" y1="13" x2="8" y2="13"></line>
+        <line x1="16" y1="17" x2="8" y2="17"></line>
+        <polyline points="10 9 9 9 8 9"></polyline>
+      </svg>
+      <span>Built with <strong>AIGNE DocSmith</strong></span>
+    </a>
+  </footer>
+
+  <script>document.addEventListener('DOMContentLoaded', function() {
+    if (typeof hljs !== 'undefined') hljs.highlightAll();
+  });</script>
+</body>
+</html>

@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Overview - claude-hud</title>
+  <meta name="description" content="">
+  <meta property="og:title" content="Overview">
+  <meta property="og:description" content="">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+  <link rel="stylesheet" href="../../assets/docsmith.css">
+  <link rel="stylesheet" href="../../assets/theme.css">
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github-dark.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js" defer></script>
+  <script src="../../assets/nav.js" defer></script>
+  <script>
+    // Initialize theme from localStorage or system preference
+    (function() {
+      const stored = localStorage.getItem('docsmith-theme');
+      if (stored) {
+        document.documentElement.setAttribute('data-theme', stored);
+      } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      }
+    })();
+
+    function toggleTheme() {
+      const html = document.documentElement;
+      const current = html.getAttribute('data-theme');
+      const next = current === 'dark' ? 'light' : 'dark';
+      html.setAttribute('data-theme', next);
+      localStorage.setItem('docsmith-theme', next);
+    }
+  </script>
+</head>
+<body data-ds-path="/overview">
+  <header data-ds="header">
+    <a href="/en/index.html" class="site-title">claude-hud</a>
+    <div class="header-controls">
+      
+    <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
+      <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="5"></circle>
+        <line x1="12" y1="1" x2="12" y2="3"></line>
+        <line x1="12" y1="21" x2="12" y2="23"></line>
+        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+        <line x1="1" y1="12" x2="3" y2="12"></line>
+        <line x1="21" y1="12" x2="23" y2="12"></line>
+        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+      </svg>
+      <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+      </svg>
+    </button>
+    </div>
+  </header>
+  <div data-ds="layout">
+    <aside data-ds="sidebar"><!-- nav.js 渲染 --></aside>
+    <main data-ds="content"><h1 id="overview" tabindex="-1">Overview <a class="header-anchor" href="#overview" aria-hidden="true">#</a></h1>
+<p>Claude HUD is a statusline plugin for <a href="https://claude.ai/code">Claude Code</a> that displays real-time session information directly below your input prompt. It shows context window usage, active tools, running agents, and todo progress — giving you full visibility into what Claude is doing and how much capacity remains.</p>
+<p><img src="../../assets/claude-hud-preview-16-9.png" alt="Claude HUD in action — a terminal statusline showing model name, context usage bar, git branch, tool activity, and todo progress"></p>
+<h2 id="why-claude-hud" tabindex="-1">Why Claude HUD <a class="header-anchor" href="#why-claude-hud" aria-hidden="true">#</a></h2>
+<p>When working with Claude Code, you’re flying blind by default. You don’t know how full your context window is until Claude tells you it’s running out. You can’t see which tools are being invoked or whether a sub-agent is still running. Claude HUD solves this by surfacing session state as a persistent, always-visible statusline.</p>
+<p><strong>Key benefits:</strong></p>
+<ul>
+<li><strong>Avoid context blowouts</strong> — watch your context usage climb in real time and take action before hitting the limit</li>
+<li><strong>Understand tool activity</strong> — see exactly which files Claude is reading, editing, or searching</li>
+<li><strong>Track agent progress</strong> — know when sub-agents are running and what they’re working on</li>
+<li><strong>Monitor task completion</strong> — follow todo progress as Claude works through your checklist</li>
+<li><strong>Stay aware of rate limits</strong> — see your usage allowance consumption (Pro/Max/Team plans)</li>
+</ul>
+<h2 id="what-you-see" tabindex="-1">What You See <a class="header-anchor" href="#what-you-see" aria-hidden="true">#</a></h2>
+<p>Claude HUD renders up to four lines below your input prompt. The first two lines are always visible; the rest appear when relevant activity is detected.</p>
+<h3 id="line-1%3A-session-info" tabindex="-1">Line 1: Session Info <a class="header-anchor" href="#line-1%3A-session-info" aria-hidden="true">#</a></h3>
+<pre><code>[Opus | Max] │ my-project git:(main*)
+</code></pre>
+<p>This line shows:</p>
+<ul>
+<li><strong>Model name</strong> — which Claude model is active (Opus, Sonnet, Haiku)</li>
+<li><strong>Plan name</strong> — your subscription tier (Pro, Max, Team) or <code>Bedrock</code> for AWS users</li>
+<li><strong>Project path</strong> — the current working directory (configurable from 1 to 3 levels deep)</li>
+<li><strong>Git branch</strong> — current branch name with optional dirty indicator (<code>*</code>), ahead/behind counts, and file stats</li>
+</ul>
+<h3 id="line-2%3A-context-and-usage" tabindex="-1">Line 2: Context and Usage <a class="header-anchor" href="#line-2%3A-context-and-usage" aria-hidden="true">#</a></h3>
+<pre><code>Context █████░░░░░ 45% │ Usage ██░░░░░░░░ 25% (1h 30m / 5h)
+</code></pre>
+<p>The context bar uses color coding to indicate health:</p>
+<table>
+<thead>
+<tr>
+<th>Context Level</th>
+<th>Color</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0–70%</td>
+<td>Green</td>
+<td>Healthy — plenty of room</td>
+</tr>
+<tr>
+<td>70–85%</td>
+<td>Yellow</td>
+<td>Warning — consider wrapping up or compacting</td>
+</tr>
+<tr>
+<td>85%+</td>
+<td>Red</td>
+<td>Critical — token breakdown shown automatically</td>
+</tr>
+</tbody>
+</table>
+<p>The usage bar (right side) shows your rate limit consumption for the current billing period. A 7-day rolling usage appears when it exceeds the configured threshold (default: 80%).</p>
+<h3 id="line-3%3A-tool-activity-(optional)" tabindex="-1">Line 3: Tool Activity (Optional) <a class="header-anchor" href="#line-3%3A-tool-activity-(optional)" aria-hidden="true">#</a></h3>
+<pre><code>◐ Edit: auth.ts | ✓ Read ×3 | ✓ Grep ×2
+</code></pre>
+<p>Shows currently running tools with a spinner (<code>◐</code>) and completed tools with a checkmark (<code>✓</code>). Tool names are aggregated by type with counts when multiple invocations occur.</p>
+<h3 id="line-4%3A-agent-status-(optional)" tabindex="-1">Line 4: Agent Status (Optional) <a class="header-anchor" href="#line-4%3A-agent-status-(optional)" aria-hidden="true">#</a></h3>
+<pre><code>◐ explore [haiku]: Finding auth code (2m 15s)
+</code></pre>
+<p>Displays active sub-agents with their type, assigned model, description, and elapsed time. Agents appear when Claude delegates work to sub-tasks.</p>
+<h3 id="line-5%3A-todo-progress-(optional)" tabindex="-1">Line 5: Todo Progress (Optional) <a class="header-anchor" href="#line-5%3A-todo-progress-(optional)" aria-hidden="true">#</a></h3>
+<pre><code>▸ Fix authentication bug (2/5)
+</code></pre>
+<p>Tracks the current in-progress task from Claude’s todo list with a completion counter showing done versus total items.</p>
+<h2 id="how-it-works" tabindex="-1">How It Works <a class="header-anchor" href="#how-it-works" aria-hidden="true">#</a></h2>
+<p>Claude HUD uses Claude Code’s native <strong>statusline API</strong> — no separate terminal window, no tmux, no screen splitting. It runs as a plugin that Claude Code invokes approximately every 300 milliseconds.</p>
+<pre><code>Claude Code → stdin (JSON) → claude-hud → stdout → terminal statusline
+                           ↘ transcript (JSONL) → tool/agent/todo parsing
+</code></pre>
+<p>The plugin draws from two data sources:</p>
+<ol>
+<li><strong>stdin JSON</strong> — Claude Code passes model information, token counts, and the context window size directly. This data is native and accurate (not estimated).</li>
+<li><strong>Transcript JSONL</strong> — Claude HUD reads the session transcript file to extract tool usage, agent activity, and todo state. It matches <code>tool_use</code> blocks to <code>tool_result</code> blocks by ID to determine running versus completed status.</li>
+</ol>
+<p>Additionally, Claude HUD reads configuration files (<code>~/.claude/settings.json</code>, <code>CLAUDE.md</code> files, <code>.mcp.json</code>) to count rules, MCP servers, and hooks when the config counts display is enabled.</p>
+<h2 id="quick-start" tabindex="-1">Quick Start <a class="header-anchor" href="#quick-start" aria-hidden="true">#</a></h2>
+<p>Getting Claude HUD running takes three commands inside a Claude Code session:</p>
+<p><strong>Step 1: Add the marketplace</strong></p>
+<pre><code>/plugin marketplace add jarrodwatts/claude-hud
+</code></pre>
+<p><strong>Step 2: Install the plugin</strong></p>
+<pre><code>/plugin install claude-hud
+</code></pre>
+<blockquote>
+<p><strong>Linux users:</strong> If you encounter <code>EXDEV: cross-device link not permitted</code>, set TMPDIR before launching Claude Code:</p>
+<pre><code class="language-bash">mkdir -p ~/.cache/tmp &amp;&amp; TMPDIR=~/.cache/tmp claude
+</code></pre>
+<p>Then run the install command in that session. This is a <a href="https://github.com/anthropics/claude-code/issues/14799">known Claude Code platform limitation</a>.</p>
+</blockquote>
+<p><strong>Step 3: Configure the statusline</strong></p>
+<pre><code>/claude-hud:setup
+</code></pre>
+<p>The HUD appears immediately — no restart needed.</p>
+<h2 id="configuration-at-a-glance" tabindex="-1">Configuration at a Glance <a class="header-anchor" href="#configuration-at-a-glance" aria-hidden="true">#</a></h2>
+<p>Claude HUD ships with three presets to match different preferences:</p>
+<table>
+<thead>
+<tr>
+<th>Preset</th>
+<th>What’s Shown</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Full</strong></td>
+<td>Everything — tools, agents, todos, git, usage, duration</td>
+</tr>
+<tr>
+<td><strong>Essential</strong></td>
+<td>Activity lines + git status, minimal info clutter</td>
+</tr>
+<tr>
+<td><strong>Minimal</strong></td>
+<td>Core only — model name and context bar</td>
+</tr>
+</tbody>
+</table>
+<p>Run <code>/claude-hud:configure</code> at any time to switch presets or toggle individual elements. For advanced settings like custom colors and thresholds, edit the config file directly at <code>~/.claude/plugins/claude-hud/config.json</code>.</p>
+<p>See the <a href="configuration.html">Configuration</a> guide for the full options reference.</p>
+<h2 id="display-formats" tabindex="-1">Display Formats <a class="header-anchor" href="#display-formats" aria-hidden="true">#</a></h2>
+<p>The project path supports multiple depth levels:</p>
+<pre><code>1 level (default):  [Opus] │ my-project git:(main)
+2 levels:           [Opus] │ apps/my-project git:(main)
+3 levels:           [Opus] │ dev/apps/my-project git:(main)
+</code></pre>
+<p>Git status indicators provide additional context:</p>
+<pre><code>Dirty indicator:    [Opus] │ my-project git:(main*)
+Ahead/behind:       [Opus] │ my-project git:(main ↑2 ↓1)
+File stats:         [Opus] │ my-project git:(main* !3 +1 ?2)
+</code></pre>
+<p>File stat symbols: <code>!</code> = modified, <code>+</code> = added/staged, <code>✘</code> = deleted, <code>?</code> = untracked. Counts of zero are omitted.</p>
+<h2 id="context-display-options" tabindex="-1">Context Display Options <a class="header-anchor" href="#context-display-options" aria-hidden="true">#</a></h2>
+<p>The context value can be shown in three formats:</p>
+<table>
+<thead>
+<tr>
+<th>Format</th>
+<th>Example</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>percent</code></td>
+<td><code>45%</code></td>
+<td>Percentage of context used</td>
+</tr>
+<tr>
+<td><code>tokens</code></td>
+<td><code>45k/200k</code></td>
+<td>Current tokens / max tokens</td>
+</tr>
+<tr>
+<td><code>remaining</code></td>
+<td><code>55%</code></td>
+<td>Percentage of context remaining</td>
+</tr>
+</tbody>
+</table>
+<p>At high context usage (85%+), a token breakdown appears automatically showing input versus cache token distribution.</p>
+<h2 id="usage-limits" tabindex="-1">Usage Limits <a class="header-anchor" href="#usage-limits" aria-hidden="true">#</a></h2>
+<p>Usage display is enabled by default for Claude Pro, Max, and Team subscribers. It shows your rate limit consumption alongside the context bar:</p>
+<pre><code>Context █████░░░░░ 45% │ Usage ██░░░░░░░░ 25% (1h 30m / 5h) | ██████████ 85% (2d / 7d)
+</code></pre>
+<p>The 7-day rolling usage appears when consumption exceeds the configured threshold (default: 80%).</p>
+<p><strong>Requirements:</strong></p>
+<ul>
+<li>Claude Pro, Max, or Team subscription (not available for API-only users)</li>
+<li>OAuth credentials from Claude Code (created automatically on login)</li>
+</ul>
+<p>API users and AWS Bedrock users do not see usage limits, as they operate under different billing models.</p>
+<h2 id="requirements" tabindex="-1">Requirements <a class="header-anchor" href="#requirements" aria-hidden="true">#</a></h2>
+<ul>
+<li><strong>Claude Code</strong> v1.0.80 or later</li>
+<li><strong>Node.js</strong> 18+ or Bun</li>
+</ul>
+<h2 id="next-steps" tabindex="-1">Next Steps <a class="header-anchor" href="#next-steps" aria-hidden="true">#</a></h2>
+<ul>
+<li><a href="getting-started.html">Getting Started</a> — step-by-step installation with screenshots</li>
+<li><a href="configuration.html">Configuration</a> — full options reference and example configs</li>
+<li><a href="hud-elements.html">HUD Elements</a> — detailed breakdown of every display element</li>
+<li><a href="architecture.html">Architecture</a> — how Claude HUD works under the hood</li>
+<li><a href="troubleshooting.html">Troubleshooting</a> — fix common issues with installation and display</li>
+</ul>
+</main>
+    <nav data-ds="toc"><div class="toc-title">On this page</div><ul><li><a href="#why-claude-hud">Why Claude HUD</a></li><li><a href="#what-you-see">What You See</a></li><ul><li><a href="#line-1%3A-session-info">Line 1: Session Info</a></li><li><a href="#line-2%3A-context-and-usage">Line 2: Context and Usage</a></li><li><a href="#line-3%3A-tool-activity-(optional)">Line 3: Tool Activity (Optional)</a></li><li><a href="#line-4%3A-agent-status-(optional)">Line 4: Agent Status (Optional)</a></li><li><a href="#line-5%3A-todo-progress-(optional)">Line 5: Todo Progress (Optional)</a></li></ul><li><a href="#how-it-works">How It Works</a></li><li><a href="#quick-start">Quick Start</a></li><li><a href="#configuration-at-a-glance">Configuration at a Glance</a></li><li><a href="#display-formats">Display Formats</a></li><li><a href="#context-display-options">Context Display Options</a></li><li><a href="#usage-limits">Usage Limits</a></li><li><a href="#requirements">Requirements</a></li><li><a href="#next-steps">Next Steps</a></li></ul></nav>
+  </div>
+  <footer data-ds="footer">
+    <a href="https://docsmith.aigne.io/" target="_blank" rel="noopener noreferrer" class="docsmith-badge">
+      <svg class="docsmith-badge-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+        <polyline points="14 2 14 8 20 8"></polyline>
+        <line x1="16" y1="13" x2="8" y2="13"></line>
+        <line x1="16" y1="17" x2="8" y2="17"></line>
+        <polyline points="10 9 9 9 8 9"></polyline>
+      </svg>
+      <span>Built with <strong>AIGNE DocSmith</strong></span>
+    </a>
+  </footer>
+
+  <script>document.addEventListener('DOMContentLoaded', function() {
+    if (typeof hljs !== 'undefined') hljs.highlightAll();
+  });</script>
+</body>
+</html>

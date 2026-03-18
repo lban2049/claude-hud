@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Getting Started - claude-hud</title>
+  <meta name="description" content="">
+  <meta property="og:title" content="Getting Started">
+  <meta property="og:description" content="">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+  <link rel="stylesheet" href="../../assets/docsmith.css">
+  <link rel="stylesheet" href="../../assets/theme.css">
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github-dark.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js" defer></script>
+  <script src="../../assets/nav.js" defer></script>
+  <script>
+    // Initialize theme from localStorage or system preference
+    (function() {
+      const stored = localStorage.getItem('docsmith-theme');
+      if (stored) {
+        document.documentElement.setAttribute('data-theme', stored);
+      } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      }
+    })();
+
+    function toggleTheme() {
+      const html = document.documentElement;
+      const current = html.getAttribute('data-theme');
+      const next = current === 'dark' ? 'light' : 'dark';
+      html.setAttribute('data-theme', next);
+      localStorage.setItem('docsmith-theme', next);
+    }
+  </script>
+</head>
+<body data-ds-path="/getting-started">
+  <header data-ds="header">
+    <a href="/en/index.html" class="site-title">claude-hud</a>
+    <div class="header-controls">
+      
+    <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
+      <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="5"></circle>
+        <line x1="12" y1="1" x2="12" y2="3"></line>
+        <line x1="12" y1="21" x2="12" y2="23"></line>
+        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+        <line x1="1" y1="12" x2="3" y2="12"></line>
+        <line x1="21" y1="12" x2="23" y2="12"></line>
+        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+      </svg>
+      <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+      </svg>
+    </button>
+    </div>
+  </header>
+  <div data-ds="layout">
+    <aside data-ds="sidebar"><!-- nav.js 渲染 --></aside>
+    <main data-ds="content"><h1 id="getting-started" tabindex="-1">Getting Started <a class="header-anchor" href="#getting-started" aria-hidden="true">#</a></h1>
+<p>Install Claude HUD and get it running in under a minute. This guide walks you through prerequisites, installation, first-run configuration, and verifying that everything works.</p>
+<p><strong>Prerequisites:</strong></p>
+<ul>
+<li><a href="https://claude.ai/code">Claude Code</a> v1.0.80 or later</li>
+<li>Node.js 18+ or Bun</li>
+</ul>
+<p><strong>Parent topic:</strong> <a href="overview.html">Overview</a></p>
+<hr>
+<h2 id="quick-install" tabindex="-1">Quick Install <a class="header-anchor" href="#quick-install" aria-hidden="true">#</a></h2>
+<p>Claude HUD installs entirely from within Claude Code. Open a terminal with Claude Code running, then follow these three steps.</p>
+<h3 id="step-1%3A-add-the-marketplace" tabindex="-1">Step 1: Add the Marketplace <a class="header-anchor" href="#step-1%3A-add-the-marketplace" aria-hidden="true">#</a></h3>
+<p>Register the Claude HUD marketplace source so Claude Code knows where to find the plugin:</p>
+<pre><code>/plugin marketplace add jarrodwatts/claude-hud
+</code></pre>
+<p>This is a one-time operation. Once added, the marketplace persists across sessions.</p>
+<h3 id="step-2%3A-install-the-plugin" tabindex="-1">Step 2: Install the Plugin <a class="header-anchor" href="#step-2%3A-install-the-plugin" aria-hidden="true">#</a></h3>
+<pre><code>/plugin install claude-hud
+</code></pre>
+<p>Claude Code downloads the latest release, compiles it, and registers it as a statusline plugin.</p>
+<blockquote>
+<p><strong>Linux users:</strong> If you see <code>EXDEV: cross-device link not permitted</code>, your <code>/tmp</code> is on a separate filesystem (common with tmpfs). Fix it by launching Claude Code with a local temp directory:</p>
+<pre><code class="language-bash">mkdir -p ~/.cache/tmp &amp;&amp; TMPDIR=~/.cache/tmp claude
+</code></pre>
+<p>Then run <code>/plugin install claude-hud</code> inside that session. This is a <a href="https://github.com/anthropics/claude-code/issues/14799">Claude Code platform limitation</a>, not specific to Claude HUD.</p>
+</blockquote>
+<h3 id="step-3%3A-configure-the-statusline" tabindex="-1">Step 3: Configure the Statusline <a class="header-anchor" href="#step-3%3A-configure-the-statusline" aria-hidden="true">#</a></h3>
+<pre><code>/claude-hud:setup
+</code></pre>
+<p>This command registers the HUD as your active statusline in <code>~/.claude/settings.json</code>. The HUD appears immediately — no restart needed.</p>
+<hr>
+<h2 id="what-you-should-see" tabindex="-1">What You Should See <a class="header-anchor" href="#what-you-should-see" aria-hidden="true">#</a></h2>
+<p>After setup, a statusline appears below your Claude Code input. The default view shows two lines:</p>
+<p><img src="../../assets/claude-hud-preview-5-2.png" alt="Claude HUD preview showing context bar, model info, and project path"></p>
+<pre><code>[Opus | Max] | my-project git:(main*)
+Context █████░░░░░ 45% | Usage ██░░░░░░░░ 25% (1h 30m / 5h)
+</code></pre>
+<ul>
+<li><strong>Line 1</strong> — Model name, plan tier (or <code>Bedrock</code>), project path, and git branch</li>
+<li><strong>Line 2</strong> — Context usage bar (color-coded) and rate limit consumption</li>
+</ul>
+<p>The context bar changes color as your session fills up:</p>
+<table>
+<thead>
+<tr>
+<th>Context Usage</th>
+<th>Color</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0–70%</td>
+<td>Green</td>
+<td>Healthy — plenty of room</td>
+</tr>
+<tr>
+<td>70–85%</td>
+<td>Yellow</td>
+<td>Warning — consider wrapping up soon</td>
+</tr>
+<tr>
+<td>85%+</td>
+<td>Red</td>
+<td>Critical — token breakdown displayed</td>
+</tr>
+</tbody>
+</table>
+<p>If your HUD does not appear, jump to the <a href="troubleshooting.html">Troubleshooting</a> guide.</p>
+<hr>
+<h2 id="choose-a-preset" tabindex="-1">Choose a Preset <a class="header-anchor" href="#choose-a-preset" aria-hidden="true">#</a></h2>
+<p>Run the interactive configurator to pick a display preset:</p>
+<pre><code>/claude-hud:configure
+</code></pre>
+<p>Three presets control how much information the HUD shows:</p>
+<table>
+<thead>
+<tr>
+<th>Preset</th>
+<th>Lines</th>
+<th>What’s Shown</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Full</strong></td>
+<td>Up to 5</td>
+<td>Everything — tools, agents, todos, git, usage, duration</td>
+</tr>
+<tr>
+<td><strong>Essential</strong></td>
+<td>3</td>
+<td>Activity lines + git status, minimal clutter</td>
+</tr>
+<tr>
+<td><strong>Minimal</strong></td>
+<td>2</td>
+<td>Core only — model name and context bar</td>
+</tr>
+</tbody>
+</table>
+<p>After choosing a preset, the configurator lets you toggle individual elements on or off. Your choices are saved to <code>~/.claude/plugins/claude-hud/config.json</code>.</p>
+<h3 id="preset-examples" tabindex="-1">Preset Examples <a class="header-anchor" href="#preset-examples" aria-hidden="true">#</a></h3>
+<p><strong>Full preset</strong> — all lines enabled:</p>
+<pre><code>[Opus | Max] | my-project git:(main*)
+Context █████░░░░░ 45% | Usage ██░░░░░░░░ 25% (1h 30m / 5h)
+◐ Edit: auth.ts | ✓ Read ×3 | ✓ Grep ×2
+◐ explore [haiku]: Finding auth code (2m 15s)
+▸ Fix authentication bug (2/5)
+</code></pre>
+<p><strong>Minimal preset</strong> — just the essentials:</p>
+<pre><code>[Opus] | my-project git:(main)
+Context █████░░░░░ 45%
+</code></pre>
+<hr>
+<h2 id="enable-optional-lines" tabindex="-1">Enable Optional Lines <a class="header-anchor" href="#enable-optional-lines" aria-hidden="true">#</a></h2>
+<p>By default, only the session info and context bar are visible. Three additional lines can be enabled:</p>
+<h3 id="tools-activity" tabindex="-1">Tools Activity <a class="header-anchor" href="#tools-activity" aria-hidden="true">#</a></h3>
+<p>Shows which tools Claude is using right now and a summary of recent tool calls:</p>
+<pre><code>◐ Edit: auth.ts | ✓ Read ×3 | ✓ Grep ×2
+</code></pre>
+<p>Enable with:</p>
+<pre><code class="language-json">{ &quot;display&quot;: { &quot;showTools&quot;: true } }
+</code></pre>
+<h3 id="agent-tracking" tabindex="-1">Agent Tracking <a class="header-anchor" href="#agent-tracking" aria-hidden="true">#</a></h3>
+<p>Shows running subagents with their model, task description, and elapsed time:</p>
+<pre><code>◐ explore [haiku]: Finding auth code (2m 15s)
+</code></pre>
+<p>Enable with:</p>
+<pre><code class="language-json">{ &quot;display&quot;: { &quot;showAgents&quot;: true } }
+</code></pre>
+<h3 id="todo-progress" tabindex="-1">Todo Progress <a class="header-anchor" href="#todo-progress" aria-hidden="true">#</a></h3>
+<p>Tracks task completion from <code>TodoWrite</code> calls in real time:</p>
+<pre><code>▸ Fix authentication bug (2/5)
+</code></pre>
+<p>Enable with:</p>
+<pre><code class="language-json">{ &quot;display&quot;: { &quot;showTodos&quot;: true } }
+</code></pre>
+<p>These lines only appear when there is activity to display. When idle, they hide automatically to keep the HUD clean.</p>
+<hr>
+<h2 id="edit-the-config-file-directly" tabindex="-1">Edit the Config File Directly <a class="header-anchor" href="#edit-the-config-file-directly" aria-hidden="true">#</a></h2>
+<p>For settings not covered by the interactive configurator — such as custom colors, path depth, or cache timing — edit the config file directly:</p>
+<pre><code class="language-bash"># Open the config file in your editor
+$EDITOR ~/.claude/plugins/claude-hud/config.json
+</code></pre>
+<p>A minimal example that enables all activity lines with custom colors:</p>
+<pre><code class="language-json">{
+  &quot;lineLayout&quot;: &quot;expanded&quot;,
+  &quot;pathLevels&quot;: 2,
+  &quot;display&quot;: {
+    &quot;showTools&quot;: true,
+    &quot;showAgents&quot;: true,
+    &quot;showTodos&quot;: true,
+    &quot;showDuration&quot;: true
+  },
+  &quot;colors&quot;: {
+    &quot;context&quot;: &quot;cyan&quot;,
+    &quot;usage&quot;: &quot;brightBlue&quot;,
+    &quot;warning&quot;: &quot;yellow&quot;,
+    &quot;critical&quot;: &quot;red&quot;
+  }
+}
+</code></pre>
+<p>Running <code>/claude-hud:configure</code> later preserves any manual settings you have added.</p>
+<p>For the full list of configuration options, see the <a href="configuration.html">Configuration</a> reference.</p>
+<hr>
+<h2 id="verify-the-installation" tabindex="-1">Verify the Installation <a class="header-anchor" href="#verify-the-installation" aria-hidden="true">#</a></h2>
+<p>After setup, confirm everything works:</p>
+<p><strong>1. Check the plugin is registered:</strong></p>
+<pre><code>/plugin list
+</code></pre>
+<p>You should see <code>claude-hud</code> in the output.</p>
+<p><strong>2. Check the statusline config:</strong></p>
+<p>The <code>/claude-hud:setup</code> command adds a <code>statusLine</code> entry to <code>~/.claude/settings.json</code>. You can verify it exists:</p>
+<pre><code class="language-bash">cat ~/.claude/settings.json | grep statusLine
+</code></pre>
+<p><strong>3. Test with sample data (advanced):</strong></p>
+<p>If you want to test the plugin outside of Claude Code, pipe JSON to the built binary:</p>
+<pre><code class="language-bash">echo '{&quot;model&quot;:{&quot;display_name&quot;:&quot;Opus&quot;},&quot;context_window&quot;:{&quot;current_usage&quot;:{&quot;input_tokens&quot;:45000},&quot;context_window_size&quot;:200000}}' | node ~/.claude/plugins/claude-hud/dist/index.js
+</code></pre>
+<p>You should see a rendered statusline in your terminal.</p>
+<hr>
+<h2 id="usage-limits-display" tabindex="-1">Usage Limits Display <a class="header-anchor" href="#usage-limits-display" aria-hidden="true">#</a></h2>
+<p>If you have a Claude Pro, Max, or Team subscription, the HUD shows your rate limit consumption alongside context usage. This is enabled by default.</p>
+<pre><code>Context █████░░░░░ 45% | Usage ██░░░░░░░░ 25% (1h 30m / 5h)
+</code></pre>
+<p>When your 7-day usage exceeds the configured threshold (default 80%), that also appears:</p>
+<pre><code>Context █████░░░░░ 45% | Usage ██░░░░░░░░ 25% (1h 30m / 5h) | ██████████ 85% (2d / 7d)
+</code></pre>
+<p><strong>Requirements for usage display:</strong></p>
+<ul>
+<li>A Claude Pro, Max, or Team subscription (not API-key users)</li>
+<li>OAuth credentials from Claude Code (created automatically on login)</li>
+</ul>
+<p><strong>Not seeing usage data?</strong> Check these common causes:</p>
+<ul>
+<li>You are logged in with an API key instead of OAuth — usage display requires a subscription</li>
+<li><code>display.showUsage</code> is set to <code>false</code> in your config</li>
+<li>You are using AWS Bedrock — usage is managed in AWS, not shown in the HUD</li>
+<li>A custom <code>ANTHROPIC_BASE_URL</code> is set — the Anthropic OAuth usage API may not apply</li>
+<li>You are behind a proxy — set <code>HTTPS_PROXY</code> (or <code>HTTP_PROXY</code> / <code>ALL_PROXY</code>)</li>
+<li>For slow networks, increase the timeout with the <code>CLAUDE_HUD_USAGE_TIMEOUT_MS</code> environment variable</li>
+</ul>
+<hr>
+<h2 id="updating-claude-hud" tabindex="-1">Updating Claude HUD <a class="header-anchor" href="#updating-claude-hud" aria-hidden="true">#</a></h2>
+<p>To update to the latest version, run:</p>
+<pre><code>/plugin install claude-hud
+</code></pre>
+<p>The <code>/claude-hud:setup</code> command configures an auto-updating path, so you do not need to re-run setup after updating. The next time Claude Code starts, it picks up the new version automatically.</p>
+<hr>
+<h2 id="uninstalling" tabindex="-1">Uninstalling <a class="header-anchor" href="#uninstalling" aria-hidden="true">#</a></h2>
+<p>To remove Claude HUD:</p>
+<p><strong>1. Remove the plugin:</strong></p>
+<pre><code>/plugin uninstall claude-hud
+</code></pre>
+<p><strong>2. Remove the statusline config</strong> (optional):</p>
+<p>Edit <code>~/.claude/settings.json</code> and delete the <code>statusLine</code> entry, or set it to <code>null</code>.</p>
+<p><strong>3. Remove the config file</strong> (optional):</p>
+<pre><code class="language-bash">rm ~/.claude/plugins/claude-hud/config.json
+</code></pre>
+<hr>
+<h2 id="next-steps" tabindex="-1">Next Steps <a class="header-anchor" href="#next-steps" aria-hidden="true">#</a></h2>
+<ul>
+<li><a href="configuration.html">Configuration</a> — Full reference for every setting, color, and layout option</li>
+<li><a href="hud-elements.html">HUD Elements</a> — Understand every line, bar, and indicator in the display</li>
+<li><a href="troubleshooting.html">Troubleshooting</a> — Fix common issues with installation, display, and platform quirks</li>
+</ul>
+</main>
+    <nav data-ds="toc"><div class="toc-title">On this page</div><ul><li><a href="#quick-install">Quick Install</a></li><ul><li><a href="#step-1%3A-add-the-marketplace">Step 1: Add the Marketplace</a></li><li><a href="#step-2%3A-install-the-plugin">Step 2: Install the Plugin</a></li><li><a href="#step-3%3A-configure-the-statusline">Step 3: Configure the Statusline</a></li></ul><li><a href="#what-you-should-see">What You Should See</a></li><li><a href="#choose-a-preset">Choose a Preset</a></li><ul><li><a href="#preset-examples">Preset Examples</a></li></ul><li><a href="#enable-optional-lines">Enable Optional Lines</a></li><ul><li><a href="#tools-activity">Tools Activity</a></li><li><a href="#agent-tracking">Agent Tracking</a></li><li><a href="#todo-progress">Todo Progress</a></li></ul><li><a href="#edit-the-config-file-directly">Edit the Config File Directly</a></li><li><a href="#verify-the-installation">Verify the Installation</a></li><li><a href="#usage-limits-display">Usage Limits Display</a></li><li><a href="#updating-claude-hud">Updating Claude HUD</a></li><li><a href="#uninstalling">Uninstalling</a></li><li><a href="#next-steps">Next Steps</a></li></ul></nav>
+  </div>
+  <footer data-ds="footer">
+    <a href="https://docsmith.aigne.io/" target="_blank" rel="noopener noreferrer" class="docsmith-badge">
+      <svg class="docsmith-badge-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+        <polyline points="14 2 14 8 20 8"></polyline>
+        <line x1="16" y1="13" x2="8" y2="13"></line>
+        <line x1="16" y1="17" x2="8" y2="17"></line>
+        <polyline points="10 9 9 9 8 9"></polyline>
+      </svg>
+      <span>Built with <strong>AIGNE DocSmith</strong></span>
+    </a>
+  </footer>
+
+  <script>document.addEventListener('DOMContentLoaded', function() {
+    if (typeof hljs !== 'undefined') hljs.highlightAll();
+  });</script>
+</body>
+</html>

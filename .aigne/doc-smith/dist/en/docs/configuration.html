@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Configuration - claude-hud</title>
+  <meta name="description" content="">
+  <meta property="og:title" content="Configuration">
+  <meta property="og:description" content="">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+  <link rel="stylesheet" href="../../assets/docsmith.css">
+  <link rel="stylesheet" href="../../assets/theme.css">
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github-dark.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js" defer></script>
+  <script src="../../assets/nav.js" defer></script>
+  <script>
+    // Initialize theme from localStorage or system preference
+    (function() {
+      const stored = localStorage.getItem('docsmith-theme');
+      if (stored) {
+        document.documentElement.setAttribute('data-theme', stored);
+      } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      }
+    })();
+
+    function toggleTheme() {
+      const html = document.documentElement;
+      const current = html.getAttribute('data-theme');
+      const next = current === 'dark' ? 'light' : 'dark';
+      html.setAttribute('data-theme', next);
+      localStorage.setItem('docsmith-theme', next);
+    }
+  </script>
+</head>
+<body data-ds-path="/configuration">
+  <header data-ds="header">
+    <a href="/en/index.html" class="site-title">claude-hud</a>
+    <div class="header-controls">
+      
+    <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
+      <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="5"></circle>
+        <line x1="12" y1="1" x2="12" y2="3"></line>
+        <line x1="12" y1="21" x2="12" y2="23"></line>
+        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+        <line x1="1" y1="12" x2="3" y2="12"></line>
+        <line x1="21" y1="12" x2="23" y2="12"></line>
+        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+      </svg>
+      <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+      </svg>
+    </button>
+    </div>
+  </header>
+  <div data-ds="layout">
+    <aside data-ds="sidebar"><!-- nav.js 渲染 --></aside>
+    <main data-ds="content"><h1 id="configuration" tabindex="-1">Configuration <a class="header-anchor" href="#configuration" aria-hidden="true">#</a></h1>
+<p>Claude HUD is highly customizable. You can adjust the layout, choose which elements to display, change colors, control thresholds, and reorder sections — all through a single JSON config file.</p>
+<p><strong>Prerequisites:</strong> <a href="getting-started.html">Getting Started</a> (Claude HUD installed and running)</p>
+<hr>
+<h2 id="configuration-methods" tabindex="-1">Configuration Methods <a class="header-anchor" href="#configuration-methods" aria-hidden="true">#</a></h2>
+<p>There are two ways to configure Claude HUD:</p>
+<h3 id="interactive-setup" tabindex="-1">Interactive Setup <a class="header-anchor" href="#interactive-setup" aria-hidden="true">#</a></h3>
+<p>Run the built-in configuration command inside Claude Code:</p>
+<pre><code>/claude-hud:configure
+</code></pre>
+<p>This guided flow lets you pick a preset, toggle individual elements, and preview the result before saving. Any manual edits you have made (such as custom colors or thresholds) are preserved.</p>
+<h3 id="manual-editing" tabindex="-1">Manual Editing <a class="header-anchor" href="#manual-editing" aria-hidden="true">#</a></h3>
+<p>Edit the config file directly for full control over every option:</p>
+<pre><code>~/.claude/plugins/claude-hud/config.json
+</code></pre>
+<p>The file uses standard JSON. If the file does not exist, Claude HUD uses its built-in defaults. If the file contains invalid JSON, it silently falls back to defaults as well.</p>
+<hr>
+<h2 id="presets" tabindex="-1">Presets <a class="header-anchor" href="#presets" aria-hidden="true">#</a></h2>
+<p>When you run <code>/claude-hud:configure</code>, you start by choosing a preset. Each preset is a starting point — you can customize individual settings afterward.</p>
+<table>
+<thead>
+<tr>
+<th>Preset</th>
+<th>What It Enables</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Full</strong></td>
+<td>Everything on — tools, agents, todos, git file stats, usage, duration</td>
+</tr>
+<tr>
+<td><strong>Essential</strong></td>
+<td>Activity lines and git status, with minimal information clutter</td>
+</tr>
+<tr>
+<td><strong>Minimal</strong></td>
+<td>Core only — model name and context bar</td>
+</tr>
+</tbody>
+</table>
+<p>After selecting a preset, the interactive flow walks you through toggling individual elements on or off.</p>
+<hr>
+<h2 id="layout-options" tabindex="-1">Layout Options <a class="header-anchor" href="#layout-options" aria-hidden="true">#</a></h2>
+<h3 id="line-layout" tabindex="-1">Line Layout <a class="header-anchor" href="#line-layout" aria-hidden="true">#</a></h3>
+<p>The <code>lineLayout</code> option controls how HUD information is arranged:</p>
+<pre><code class="language-json">{
+  &quot;lineLayout&quot;: &quot;expanded&quot;
+}
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Value</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>expanded</code></td>
+<td>Each element group gets its own line (default)</td>
+</tr>
+<tr>
+<td><code>compact</code></td>
+<td>All elements compressed into fewer lines</td>
+</tr>
+</tbody>
+</table>
+<h3 id="separators" tabindex="-1">Separators <a class="header-anchor" href="#separators" aria-hidden="true">#</a></h3>
+<p>Add visual separators between elements in the display:</p>
+<pre><code class="language-json">{
+  &quot;showSeparators&quot;: true
+}
+</code></pre>
+<p>When enabled, elements are divided by <code>|</code> characters for visual clarity.</p>
+<h3 id="project-path-depth" tabindex="-1">Project Path Depth <a class="header-anchor" href="#project-path-depth" aria-hidden="true">#</a></h3>
+<p>Control how many directory levels appear in the project path display:</p>
+<pre><code class="language-json">{
+  &quot;pathLevels&quot;: 2
+}
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Value</th>
+<th>Example Output</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>1</code></td>
+<td><code>my-project git:(main)</code></td>
+</tr>
+<tr>
+<td><code>2</code></td>
+<td><code>apps/my-project git:(main)</code></td>
+</tr>
+<tr>
+<td><code>3</code></td>
+<td><code>dev/apps/my-project git:(main)</code></td>
+</tr>
+</tbody>
+</table>
+<p>Only values <code>1</code>, <code>2</code>, or <code>3</code> are accepted. Any other value falls back to the default of <code>1</code>.</p>
+<h3 id="element-order" tabindex="-1">Element Order <a class="header-anchor" href="#element-order" aria-hidden="true">#</a></h3>
+<p>In expanded layout mode, you can control the order of HUD elements and hide elements by omitting them:</p>
+<pre><code class="language-json">{
+  &quot;elementOrder&quot;: [&quot;project&quot;, &quot;tools&quot;, &quot;context&quot;, &quot;usage&quot;, &quot;environment&quot;, &quot;agents&quot;, &quot;todos&quot;]
+}
+</code></pre>
+<p>Available elements: <code>project</code>, <code>context</code>, <code>usage</code>, <code>environment</code>, <code>tools</code>, <code>agents</code>, <code>todos</code>.</p>
+<p>Elements not included in the array are hidden in expanded mode. Duplicate entries and unrecognized names are ignored.</p>
+<hr>
+<h2 id="display-toggles" tabindex="-1">Display Toggles <a class="header-anchor" href="#display-toggles" aria-hidden="true">#</a></h2>
+<p>The <code>display</code> object controls the visibility and behavior of individual HUD components.</p>
+<h3 id="session-information" tabindex="-1">Session Information <a class="header-anchor" href="#session-information" aria-hidden="true">#</a></h3>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>showModel</code></td>
+<td>boolean</td>
+<td><code>true</code></td>
+<td>Show the model name, e.g. <code>[Opus]</code></td>
+</tr>
+<tr>
+<td><code>showProject</code></td>
+<td>boolean</td>
+<td><code>true</code></td>
+<td>Show the project path</td>
+</tr>
+<tr>
+<td><code>showSessionName</code></td>
+<td>boolean</td>
+<td><code>false</code></td>
+<td>Show the session slug or custom title from <code>/rename</code></td>
+</tr>
+<tr>
+<td><code>showDuration</code></td>
+<td>boolean</td>
+<td><code>false</code></td>
+<td>Show session duration, e.g. <code>5m</code></td>
+</tr>
+<tr>
+<td><code>showSpeed</code></td>
+<td>boolean</td>
+<td><code>false</code></td>
+<td>Show output token speed, e.g. <code>out: 42.1 tok/s</code></td>
+</tr>
+<tr>
+<td><code>showConfigCounts</code></td>
+<td>boolean</td>
+<td><code>false</code></td>
+<td>Show counts of <a href="http://CLAUDE.md">CLAUDE.md</a> files, rules, MCPs, and hooks</td>
+</tr>
+</tbody>
+</table>
+<h3 id="context-display" tabindex="-1">Context Display <a class="header-anchor" href="#context-display" aria-hidden="true">#</a></h3>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>showContextBar</code></td>
+<td>boolean</td>
+<td><code>true</code></td>
+<td>Show the visual context usage bar</td>
+</tr>
+<tr>
+<td><code>contextValue</code></td>
+<td>string</td>
+<td><code>&quot;percent&quot;</code></td>
+<td>Format for context value display</td>
+</tr>
+<tr>
+<td><code>showTokenBreakdown</code></td>
+<td>boolean</td>
+<td><code>true</code></td>
+<td>Show token details when context exceeds 85%</td>
+</tr>
+</tbody>
+</table>
+<p>The <code>contextValue</code> option accepts three formats:</p>
+<table>
+<thead>
+<tr>
+<th>Value</th>
+<th>Example Output</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>&quot;percent&quot;</code></td>
+<td><code>45%</code></td>
+<td>Percentage of context used</td>
+</tr>
+<tr>
+<td><code>&quot;tokens&quot;</code></td>
+<td><code>45k/200k</code></td>
+<td>Token count vs. total capacity</td>
+</tr>
+<tr>
+<td><code>&quot;remaining&quot;</code></td>
+<td><code>55%</code></td>
+<td>Percentage of context remaining</td>
+</tr>
+</tbody>
+</table>
+<h3 id="usage-limits" tabindex="-1">Usage Limits <a class="header-anchor" href="#usage-limits" aria-hidden="true">#</a></h3>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>showUsage</code></td>
+<td>boolean</td>
+<td><code>true</code></td>
+<td>Show rate limit consumption</td>
+</tr>
+<tr>
+<td><code>usageBarEnabled</code></td>
+<td>boolean</td>
+<td><code>true</code></td>
+<td>Render usage as a visual bar</td>
+</tr>
+<tr>
+<td><code>sevenDayThreshold</code></td>
+<td>0-100</td>
+<td><code>80</code></td>
+<td>Show 7-day usage when it reaches this percentage (0 = always show)</td>
+</tr>
+<tr>
+<td><code>usageThreshold</code></td>
+<td>0-100</td>
+<td><code>0</code></td>
+<td>Minimum percentage before showing 5-hour usage (0 = always show)</td>
+</tr>
+<tr>
+<td><code>environmentThreshold</code></td>
+<td>0-100</td>
+<td><code>0</code></td>
+<td>Minimum percentage before showing environment usage (0 = always show)</td>
+</tr>
+</tbody>
+</table>
+<p>Usage display is available for Claude Pro, Max, and Team subscribers. API users do not have rate limits and will not see usage data.</p>
+<p>When the 7-day usage exceeds the configured threshold, an additional bar appears:</p>
+<pre><code>Context ████░░░░░░ 45% | Usage ██░░░░░░░░ 25% (1h 30m / 5h) | ██████████ 85% (2d / 7d)
+</code></pre>
+<h3 id="activity-lines" tabindex="-1">Activity Lines <a class="header-anchor" href="#activity-lines" aria-hidden="true">#</a></h3>
+<p>These lines are hidden by default and only appear when there is activity to display.</p>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>showTools</code></td>
+<td>boolean</td>
+<td><code>false</code></td>
+<td>Show tool activity (reads, edits, searches)</td>
+</tr>
+<tr>
+<td><code>showAgents</code></td>
+<td>boolean</td>
+<td><code>false</code></td>
+<td>Show running subagents and their tasks</td>
+</tr>
+<tr>
+<td><code>showTodos</code></td>
+<td>boolean</td>
+<td><code>false</code></td>
+<td>Show todo item progress</td>
+</tr>
+</tbody>
+</table>
+<p>Enable all three for maximum visibility:</p>
+<pre><code class="language-json">{
+  &quot;display&quot;: {
+    &quot;showTools&quot;: true,
+    &quot;showAgents&quot;: true,
+    &quot;showTodos&quot;: true
+  }
+}
+</code></pre>
+<h3 id="autocompact-buffer" tabindex="-1">Autocompact Buffer <a class="header-anchor" href="#autocompact-buffer" aria-hidden="true">#</a></h3>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>autocompactBuffer</code></td>
+<td>string</td>
+<td><code>&quot;enabled&quot;</code></td>
+<td>Show autocompact warning indicator</td>
+</tr>
+</tbody>
+</table>
+<p>When enabled, the HUD displays a warning when context is approaching the autocompact threshold. Set to <code>&quot;disabled&quot;</code> to hide this indicator.</p>
+<hr>
+<h2 id="git-status" tabindex="-1">Git Status <a class="header-anchor" href="#git-status" aria-hidden="true">#</a></h2>
+<p>The <code>gitStatus</code> section controls how repository information appears in the HUD.</p>
+<pre><code class="language-json">{
+  &quot;gitStatus&quot;: {
+    &quot;enabled&quot;: true,
+    &quot;showDirty&quot;: true,
+    &quot;showAheadBehind&quot;: true,
+    &quot;showFileStats&quot;: true
+  }
+}
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>enabled</code></td>
+<td>boolean</td>
+<td><code>true</code></td>
+<td>Show git branch name</td>
+</tr>
+<tr>
+<td><code>showDirty</code></td>
+<td>boolean</td>
+<td><code>true</code></td>
+<td>Append <code>*</code> when there are uncommitted changes</td>
+</tr>
+<tr>
+<td><code>showAheadBehind</code></td>
+<td>boolean</td>
+<td><code>false</code></td>
+<td>Show <code>up-arrow N down-arrow N</code> for commits ahead/behind remote</td>
+</tr>
+<tr>
+<td><code>showFileStats</code></td>
+<td>boolean</td>
+<td><code>false</code></td>
+<td>Show file change counts</td>
+</tr>
+</tbody>
+</table>
+<p>With all options enabled, the display looks like:</p>
+<pre><code>[Opus] | my-project git:(main* up2 down1 !3 +1 ?2)
+</code></pre>
+<p>File stat indicators:</p>
+<table>
+<thead>
+<tr>
+<th>Symbol</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>!</code></td>
+<td>Modified files</td>
+</tr>
+<tr>
+<td><code>+</code></td>
+<td>Added/staged files</td>
+</tr>
+<tr>
+<td><code>X</code></td>
+<td>Deleted files</td>
+</tr>
+<tr>
+<td><code>?</code></td>
+<td>Untracked files</td>
+</tr>
+</tbody>
+</table>
+<p>Counts of zero are omitted for a cleaner display.</p>
+<hr>
+<h2 id="colors" tabindex="-1">Colors <a class="header-anchor" href="#colors" aria-hidden="true">#</a></h2>
+<p>Customize the color scheme with the <code>colors</code> object. Colors apply to progress bars, percentages, and warning states.</p>
+<pre><code class="language-json">{
+  &quot;colors&quot;: {
+    &quot;context&quot;: &quot;cyan&quot;,
+    &quot;usage&quot;: &quot;cyan&quot;,
+    &quot;warning&quot;: &quot;yellow&quot;,
+    &quot;usageWarning&quot;: &quot;magenta&quot;,
+    &quot;critical&quot;: &quot;red&quot;
+  }
+}
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Color Key</th>
+<th>Default</th>
+<th>Used For</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>context</code></td>
+<td><code>green</code></td>
+<td>Context bar and context percentage</td>
+</tr>
+<tr>
+<td><code>usage</code></td>
+<td><code>brightBlue</code></td>
+<td>Usage bars and percentages below warning thresholds</td>
+</tr>
+<tr>
+<td><code>warning</code></td>
+<td><code>yellow</code></td>
+<td>Context threshold warnings and usage warning text</td>
+</tr>
+<tr>
+<td><code>usageWarning</code></td>
+<td><code>brightMagenta</code></td>
+<td>Usage bars and percentages near their threshold</td>
+</tr>
+<tr>
+<td><code>critical</code></td>
+<td><code>red</code></td>
+<td>Limit-reached states and critical thresholds</td>
+</tr>
+</tbody>
+</table>
+<h3 id="available-color-names" tabindex="-1">Available Color Names <a class="header-anchor" href="#available-color-names" aria-hidden="true">#</a></h3>
+<p><code>red</code>, <code>green</code>, <code>yellow</code>, <code>magenta</code>, <code>cyan</code>, <code>brightBlue</code>, <code>brightMagenta</code></p>
+<p>Invalid color names fall back to the default for that key.</p>
+<hr>
+<h2 id="usage-cache" tabindex="-1">Usage Cache <a class="header-anchor" href="#usage-cache" aria-hidden="true">#</a></h2>
+<p>The <code>usage</code> section controls how often Claude HUD refreshes rate limit data from the Anthropic API.</p>
+<pre><code class="language-json">{
+  &quot;usage&quot;: {
+    &quot;cacheTtlSeconds&quot;: 120,
+    &quot;failureCacheTtlSeconds&quot;: 30
+  }
+}
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>cacheTtlSeconds</code></td>
+<td>number</td>
+<td><code>60</code></td>
+<td>Seconds to cache a successful usage API response</td>
+</tr>
+<tr>
+<td><code>failureCacheTtlSeconds</code></td>
+<td>number</td>
+<td><code>15</code></td>
+<td>Seconds to cache a failed response before retrying</td>
+</tr>
+</tbody>
+</table>
+<p>Both values must be positive integers. Invalid values fall back to their defaults.</p>
+<p>Increasing <code>cacheTtlSeconds</code> reduces API calls but makes usage data less current. In high-latency environments, you can also set the <code>CLAUDE_HUD_USAGE_TIMEOUT_MS</code> environment variable (in milliseconds) to increase the API request timeout.</p>
+<hr>
+<h2 id="full-example" tabindex="-1">Full Example <a class="header-anchor" href="#full-example" aria-hidden="true">#</a></h2>
+<p>Here is a complete configuration that enables all features with customized colors:</p>
+<pre><code class="language-json">{
+  &quot;lineLayout&quot;: &quot;expanded&quot;,
+  &quot;showSeparators&quot;: false,
+  &quot;pathLevels&quot;: 2,
+  &quot;elementOrder&quot;: [&quot;project&quot;, &quot;tools&quot;, &quot;context&quot;, &quot;usage&quot;, &quot;environment&quot;, &quot;agents&quot;, &quot;todos&quot;],
+  &quot;gitStatus&quot;: {
+    &quot;enabled&quot;: true,
+    &quot;showDirty&quot;: true,
+    &quot;showAheadBehind&quot;: true,
+    &quot;showFileStats&quot;: true
+  },
+  &quot;display&quot;: {
+    &quot;showModel&quot;: true,
+    &quot;showProject&quot;: true,
+    &quot;showContextBar&quot;: true,
+    &quot;contextValue&quot;: &quot;percent&quot;,
+    &quot;showConfigCounts&quot;: true,
+    &quot;showDuration&quot;: true,
+    &quot;showSpeed&quot;: false,
+    &quot;showTokenBreakdown&quot;: true,
+    &quot;showUsage&quot;: true,
+    &quot;usageBarEnabled&quot;: true,
+    &quot;showTools&quot;: true,
+    &quot;showAgents&quot;: true,
+    &quot;showTodos&quot;: true,
+    &quot;showSessionName&quot;: false,
+    &quot;autocompactBuffer&quot;: &quot;enabled&quot;,
+    &quot;usageThreshold&quot;: 0,
+    &quot;sevenDayThreshold&quot;: 80,
+    &quot;environmentThreshold&quot;: 0
+  },
+  &quot;usage&quot;: {
+    &quot;cacheTtlSeconds&quot;: 60,
+    &quot;failureCacheTtlSeconds&quot;: 15
+  },
+  &quot;colors&quot;: {
+    &quot;context&quot;: &quot;cyan&quot;,
+    &quot;usage&quot;: &quot;brightBlue&quot;,
+    &quot;warning&quot;: &quot;yellow&quot;,
+    &quot;usageWarning&quot;: &quot;magenta&quot;,
+    &quot;critical&quot;: &quot;red&quot;
+  }
+}
+</code></pre>
+<hr>
+<h2 id="validation-and-defaults" tabindex="-1">Validation and Defaults <a class="header-anchor" href="#validation-and-defaults" aria-hidden="true">#</a></h2>
+<p>Claude HUD validates every config value on load. Invalid values silently fall back to their defaults — the HUD never crashes due to a bad config.</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Validation Rule</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>lineLayout</code></td>
+<td>Must be <code>&quot;expanded&quot;</code> or <code>&quot;compact&quot;</code></td>
+</tr>
+<tr>
+<td><code>pathLevels</code></td>
+<td>Must be <code>1</code>, <code>2</code>, or <code>3</code></td>
+</tr>
+<tr>
+<td><code>contextValue</code></td>
+<td>Must be <code>&quot;percent&quot;</code>, <code>&quot;tokens&quot;</code>, or <code>&quot;remaining&quot;</code></td>
+</tr>
+<tr>
+<td><code>autocompactBuffer</code></td>
+<td>Must be <code>&quot;enabled&quot;</code> or <code>&quot;disabled&quot;</code></td>
+</tr>
+<tr>
+<td><code>elementOrder</code></td>
+<td>Array of known element names; empty or invalid resets to default</td>
+</tr>
+<tr>
+<td>Color values</td>
+<td>Must be one of the seven supported color names</td>
+</tr>
+<tr>
+<td>Thresholds</td>
+<td>Clamped to 0-100 range</td>
+</tr>
+<tr>
+<td>Cache TTLs</td>
+<td>Must be positive integers</td>
+</tr>
+</tbody>
+</table>
+<h3 id="legacy-config-migration" tabindex="-1">Legacy Config Migration <a class="header-anchor" href="#legacy-config-migration" aria-hidden="true">#</a></h3>
+<p>If you have a config file from an older version of Claude HUD (v0.0.x), the <code>layout</code> field is automatically migrated:</p>
+<ul>
+<li><code>&quot;layout&quot;: &quot;separators&quot;</code> becomes <code>lineLayout: &quot;compact&quot;</code> with <code>showSeparators: true</code></li>
+<li><code>&quot;layout&quot;: &quot;default&quot;</code> becomes <code>lineLayout: &quot;compact&quot;</code> with <code>showSeparators: false</code></li>
+</ul>
+<p>No manual migration is needed.</p>
+<hr>
+<h2 id="related-topics" tabindex="-1">Related Topics <a class="header-anchor" href="#related-topics" aria-hidden="true">#</a></h2>
+<ul>
+<li><a href="hud-elements.html">HUD Elements</a> — Detailed guide to every indicator in the display</li>
+<li><a href="troubleshooting.html">Troubleshooting</a> — Fixing config-related issues</li>
+<li><a href="overview.html">Overview</a> — What Claude HUD is and why it matters</li>
+</ul>
+</main>
+    <nav data-ds="toc"><div class="toc-title">On this page</div><ul><li><a href="#configuration-methods">Configuration Methods</a></li><ul><li><a href="#interactive-setup">Interactive Setup</a></li><li><a href="#manual-editing">Manual Editing</a></li></ul><li><a href="#presets">Presets</a></li><li><a href="#layout-options">Layout Options</a></li><ul><li><a href="#line-layout">Line Layout</a></li><li><a href="#separators">Separators</a></li><li><a href="#project-path-depth">Project Path Depth</a></li><li><a href="#element-order">Element Order</a></li></ul><li><a href="#display-toggles">Display Toggles</a></li><ul><li><a href="#session-information">Session Information</a></li><li><a href="#context-display">Context Display</a></li><li><a href="#usage-limits">Usage Limits</a></li><li><a href="#activity-lines">Activity Lines</a></li><li><a href="#autocompact-buffer">Autocompact Buffer</a></li></ul><li><a href="#git-status">Git Status</a></li><li><a href="#colors">Colors</a></li><ul><li><a href="#available-color-names">Available Color Names</a></li></ul><li><a href="#usage-cache">Usage Cache</a></li><li><a href="#full-example">Full Example</a></li><li><a href="#validation-and-defaults">Validation and Defaults</a></li><ul><li><a href="#legacy-config-migration">Legacy Config Migration</a></li></ul><li><a href="#related-topics">Related Topics</a></li></ul></nav>
+  </div>
+  <footer data-ds="footer">
+    <a href="https://docsmith.aigne.io/" target="_blank" rel="noopener noreferrer" class="docsmith-badge">
+      <svg class="docsmith-badge-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+        <polyline points="14 2 14 8 20 8"></polyline>
+        <line x1="16" y1="13" x2="8" y2="13"></line>
+        <line x1="16" y1="17" x2="8" y2="17"></line>
+        <polyline points="10 9 9 9 8 9"></polyline>
+      </svg>
+      <span>Built with <strong>AIGNE DocSmith</strong></span>
+    </a>
+  </footer>
+
+  <script>document.addEventListener('DOMContentLoaded', function() {
+    if (typeof hljs !== 'undefined') hljs.highlightAll();
+  });</script>
+</body>
+</html>

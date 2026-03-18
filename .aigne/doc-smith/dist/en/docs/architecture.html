@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Architecture - claude-hud</title>
+  <meta name="description" content="">
+  <meta property="og:title" content="Architecture">
+  <meta property="og:description" content="">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+  <link rel="stylesheet" href="../../assets/docsmith.css">
+  <link rel="stylesheet" href="../../assets/theme.css">
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github-dark.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js" defer></script>
+  <script src="../../assets/nav.js" defer></script>
+  <script>
+    // Initialize theme from localStorage or system preference
+    (function() {
+      const stored = localStorage.getItem('docsmith-theme');
+      if (stored) {
+        document.documentElement.setAttribute('data-theme', stored);
+      } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      }
+    })();
+
+    function toggleTheme() {
+      const html = document.documentElement;
+      const current = html.getAttribute('data-theme');
+      const next = current === 'dark' ? 'light' : 'dark';
+      html.setAttribute('data-theme', next);
+      localStorage.setItem('docsmith-theme', next);
+    }
+  </script>
+</head>
+<body data-ds-path="/architecture">
+  <header data-ds="header">
+    <a href="/en/index.html" class="site-title">claude-hud</a>
+    <div class="header-controls">
+      
+    <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
+      <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="5"></circle>
+        <line x1="12" y1="1" x2="12" y2="3"></line>
+        <line x1="12" y1="21" x2="12" y2="23"></line>
+        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+        <line x1="1" y1="12" x2="3" y2="12"></line>
+        <line x1="21" y1="12" x2="23" y2="12"></line>
+        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+      </svg>
+      <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+      </svg>
+    </button>
+    </div>
+  </header>
+  <div data-ds="layout">
+    <aside data-ds="sidebar"><!-- nav.js 渲染 --></aside>
+    <main data-ds="content"><h1 id="architecture" tabindex="-1">Architecture <a class="header-anchor" href="#architecture" aria-hidden="true">#</a></h1>
+<p>How Claude HUD works under the hood — from data ingestion to terminal rendering.</p>
+<blockquote>
+<p><strong>Prerequisites</strong>: Familiarity with <a href="overview.html">Claude HUD overview</a> and <a href="hud-elements.html">HUD elements</a>.</p>
+</blockquote>
+<hr>
+<h2 id="high-level-data-flow" tabindex="-1">High-Level Data Flow <a class="header-anchor" href="#high-level-data-flow" aria-hidden="true">#</a></h2>
+<p>Claude Code invokes the HUD plugin as a child process roughly every 300 ms. Each invocation is a fresh Node.js process that reads data, renders output, and exits. There is no long-running daemon or persistent state in memory.</p>
+<p>The pipeline follows five stages:</p>
+<ol>
+<li><strong>Stdin ingestion</strong> — Claude Code pipes a JSON payload containing model info, context window metrics, and a transcript file path.</li>
+<li><strong>Transcript parsing</strong> — The plugin reads the session transcript (a JSONL file on disk) to extract tool calls, agent tasks, and todo items.</li>
+<li><strong>Config and environment collection</strong> — <a href="http://CLAUDE.md">CLAUDE.md</a> files, MCP servers, hooks, rules, git status, and OAuth usage data are gathered from the filesystem and APIs.</li>
+<li><strong>Rendering</strong> — Each HUD element is rendered into ANSI-colored text lines.</li>
+<li><strong>Output</strong> — Lines are printed to stdout, where Claude Code displays them as the statusline.</li>
+</ol>
+<p><img src="../../assets/architecture-data-flow/images/en.png" alt="Data flow diagram showing the five-stage pipeline: stdin JSON from Claude Code flows into the plugin, which parses the transcript JSONL file, collects config and environment data, renders HUD elements, and outputs ANSI lines to stdout"></p>
+<hr>
+<h2 id="data-sources" tabindex="-1">Data Sources <a class="header-anchor" href="#data-sources" aria-hidden="true">#</a></h2>
+<p>Claude HUD combines three categories of input data. Understanding these sources is essential for debugging unexpected display values or extending the plugin with new indicators.</p>
+<h3 id="stdin-json" tabindex="-1">Stdin JSON <a class="header-anchor" href="#stdin-json" aria-hidden="true">#</a></h3>
+<p>Claude Code writes a JSON object to the plugin’s stdin on every invocation. This is the primary source of accurate, real-time session data.</p>
+<pre><code class="language-typescript">interface StdinData {
+  transcript_path?: string;          // Path to session transcript JSONL
+  cwd?: string;                      // Current working directory
+  model?: {
+    id?: string;                     // Raw model ID (e.g., &quot;anthropic.claude-sonnet-4-20250514&quot;)
+    display_name?: string;           // Human-readable name (e.g., &quot;Sonnet&quot;)
+  };
+  context_window?: {
+    context_window_size?: number;    // Maximum context size in tokens
+    current_usage?: {
+      input_tokens?: number;
+      cache_creation_input_tokens?: number;
+      cache_read_input_tokens?: number;
+    };
+    used_percentage?: number;        // Native percentage (v2.1.6+)
+  };
+}
+</code></pre>
+<p>The <code>used_percentage</code> field was introduced in Claude Code v2.1.6. When available, the HUD uses it directly instead of computing tokens manually — this ensures the displayed percentage matches what Claude Code reports in <code>/context</code>.</p>
+<h3 id="transcript-jsonl" tabindex="-1">Transcript JSONL <a class="header-anchor" href="#transcript-jsonl" aria-hidden="true">#</a></h3>
+<p>The transcript file is a newline-delimited JSON log of every message in the current session. The HUD parses it line by line using a streaming <code>readline</code> interface, extracting:</p>
+<table>
+<thead>
+<tr>
+<th>Block Type</th>
+<th>Data Extracted</th>
+<th>HUD Element</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>tool_use</code></td>
+<td>Tool name, target file, start time</td>
+<td>Tools line</td>
+</tr>
+<tr>
+<td><code>tool_result</code></td>
+<td>Completion status, error flag</td>
+<td>Tools line (status update)</td>
+</tr>
+<tr>
+<td><code>Task</code> tool_use</td>
+<td>Agent type, model, description</td>
+<td>Agents line</td>
+</tr>
+<tr>
+<td><code>TodoWrite</code> tool_use</td>
+<td>Full todo list</td>
+<td>Todos line</td>
+</tr>
+<tr>
+<td><code>TaskCreate</code> / <code>TaskUpdate</code></td>
+<td>Individual task status changes</td>
+<td>Todos line</td>
+</tr>
+</tbody>
+</table>
+<p>A tool is considered “running” when a <code>tool_use</code> block has no matching <code>tool_result</code> block (matched by ID). This is how the HUD shows spinner indicators for in-progress operations.</p>
+<h3 id="configuration-files" tabindex="-1">Configuration Files <a class="header-anchor" href="#configuration-files" aria-hidden="true">#</a></h3>
+<p>The plugin scans multiple locations to count configuration items displayed in the environment line:</p>
+<table>
+<thead>
+<tr>
+<th>Source</th>
+<th>What It Counts</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>~/.claude/CLAUDE.md</code></td>
+<td><a href="http://CLAUDE.md">CLAUDE.md</a> files (user scope)</td>
+</tr>
+<tr>
+<td><code>{cwd}/CLAUDE.md</code>, <code>{cwd}/CLAUDE.local.md</code></td>
+<td><a href="http://CLAUDE.md">CLAUDE.md</a> files (project scope)</td>
+</tr>
+<tr>
+<td><code>~/.claude/settings.json</code></td>
+<td>MCP servers, hooks</td>
+</tr>
+<tr>
+<td><code>{cwd}/.mcp.json</code></td>
+<td>Project MCP servers</td>
+</tr>
+<tr>
+<td><code>{cwd}/.claude/settings.json</code></td>
+<td>Project MCP servers, hooks</td>
+</tr>
+<tr>
+<td><code>~/.claude/rules/*.md</code></td>
+<td>Rule files (recursive)</td>
+</tr>
+</tbody>
+</table>
+<p>Disabled MCP servers (listed in <code>disabledMcpServers</code> or <code>disabledMcpjsonServers</code>) are subtracted from the count. The plugin also avoids double-counting when the project <code>.claude</code> directory overlaps with the user-scope directory.</p>
+<hr>
+<h2 id="entry-point-and-orchestration" tabindex="-1">Entry Point and Orchestration <a class="header-anchor" href="#entry-point-and-orchestration" aria-hidden="true">#</a></h2>
+<p>The <code>main()</code> function in <code>src/index.ts</code> orchestrates the entire pipeline. It uses dependency injection for testability — every external dependency is passed through a <code>MainDeps</code> object that can be overridden in tests.</p>
+<pre><code class="language-typescript">export async function main(overrides: Partial&lt;MainDeps&gt; = {}): Promise&lt;void&gt; {
+  const deps: MainDeps = {
+    readStdin, parseTranscript, countConfigs,
+    getGitStatus, getUsage, loadConfig,
+    parseExtraCmdArg, runExtraCmd, render,
+    now: () =&gt; Date.now(),
+    log: console.log,
+    ...overrides,
+  };
+
+  const stdin = await deps.readStdin();
+  if (!stdin) {
+    deps.log('[claude-hud] Initializing...');
+    return;
+  }
+  // ... orchestration continues
+}
+</code></pre>
+<p>When no stdin data is available (e.g., during first invocation or when running interactively), the plugin outputs an initialization message and exits gracefully.</p>
+<p>The orchestration sequence:</p>
+<ol>
+<li>Read and parse stdin JSON</li>
+<li>Parse the transcript file from the path in stdin</li>
+<li>Count configuration items from the filesystem</li>
+<li>Load user configuration (<code>config.json</code>)</li>
+<li>Optionally fetch git status and OAuth usage data</li>
+<li>Build a <code>RenderContext</code> object combining all collected data</li>
+<li>Pass the context to the render pipeline</li>
+</ol>
+<hr>
+<h2 id="rendering-pipeline" tabindex="-1">Rendering Pipeline <a class="header-anchor" href="#rendering-pipeline" aria-hidden="true">#</a></h2>
+<p>The render system is organized as a set of independent line renderers coordinated by <code>src/render/index.ts</code>. Each renderer receives the full <code>RenderContext</code> and returns either a formatted string or <code>null</code> (when there is nothing to display).</p>
+<h3 id="layout-modes" tabindex="-1">Layout Modes <a class="header-anchor" href="#layout-modes" aria-hidden="true">#</a></h3>
+<p>The plugin supports two layout modes controlled by the <code>lineLayout</code> configuration:</p>
+<ul>
+<li><strong>Expanded</strong> (default) — Each HUD element gets its own line. The element order is configurable via <code>elementOrder</code>. Adjacent <code>context</code> and <code>usage</code> elements are merged onto a single line separated by <code>│</code>.</li>
+<li><strong>Compact</strong> — Combines the session information into a single dense line. Activity indicators (tools, agents, todos) appear below.</li>
+</ul>
+<h3 id="element-renderers" tabindex="-1">Element Renderers <a class="header-anchor" href="#element-renderers" aria-hidden="true">#</a></h3>
+<table>
+<thead>
+<tr>
+<th>Element</th>
+<th>Renderer File</th>
+<th>Always Shown</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Project</td>
+<td><code>src/render/lines/project-line.ts</code></td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>Context</td>
+<td><code>src/render/lines/identity-line.ts</code></td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>Usage</td>
+<td><code>src/render/lines/usage-line.ts</code></td>
+<td>When data available</td>
+</tr>
+<tr>
+<td>Environment</td>
+<td><code>src/render/lines/environment-line.ts</code></td>
+<td>When thresholds met</td>
+</tr>
+<tr>
+<td>Tools</td>
+<td><code>src/render/tools-line.ts</code></td>
+<td>When tools used</td>
+</tr>
+<tr>
+<td>Agents</td>
+<td><code>src/render/agents-line.ts</code></td>
+<td>When agents active</td>
+</tr>
+<tr>
+<td>Todos</td>
+<td><code>src/render/todos-line.ts</code></td>
+<td>When todos exist</td>
+</tr>
+</tbody>
+</table>
+<h3 id="terminal-width-handling" tabindex="-1">Terminal Width Handling <a class="header-anchor" href="#terminal-width-handling" aria-hidden="true">#</a></h3>
+<p>The render pipeline detects terminal width from <code>process.stdout.columns</code> (falling back to the <code>COLUMNS</code> environment variable). Lines that exceed the terminal width are wrapped at separator boundaries (<code>|</code> or <code>│</code>) rather than mid-word. If a single segment still exceeds the width, it is truncated with an ellipsis.</p>
+<p>The width calculation accounts for ANSI escape sequences (which occupy zero visual width), emoji glyphs (which occupy two columns), and Unicode combining characters.</p>
+<h3 id="color-system" tabindex="-1">Color System <a class="header-anchor" href="#color-system" aria-hidden="true">#</a></h3>
+<p>Colors are applied through ANSI escape codes via helper functions in <code>src/render/colors.ts</code>. Context usage thresholds determine the bar color:</p>
+<table>
+<thead>
+<tr>
+<th>Range</th>
+<th>Color</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0–70%</td>
+<td>Green</td>
+<td>Healthy — plenty of context remaining</td>
+</tr>
+<tr>
+<td>70–85%</td>
+<td>Yellow</td>
+<td>Warning — consider wrapping up or compacting</td>
+</tr>
+<tr>
+<td>85%+</td>
+<td>Red</td>
+<td>Critical — shows token breakdown for diagnosis</td>
+</tr>
+</tbody>
+</table>
+<p>All color names are configurable through the <code>colors</code> field in <code>config.json</code>, supporting: <code>red</code>, <code>green</code>, <code>yellow</code>, <code>magenta</code>, <code>cyan</code>, <code>brightBlue</code>, and <code>brightMagenta</code>.</p>
+<hr>
+<h2 id="usage-api-integration" tabindex="-1">Usage API Integration <a class="header-anchor" href="#usage-api-integration" aria-hidden="true">#</a></h2>
+<p>The HUD optionally fetches plan usage data from the Anthropic OAuth API (<code>api.anthropic.com/api/oauth/usage</code>). Because the plugin runs as a new process every ~300 ms, a file-based caching layer prevents excessive API calls.</p>
+<h3 id="cache-strategy" tabindex="-1">Cache Strategy <a class="header-anchor" href="#cache-strategy" aria-hidden="true">#</a></h3>
+<pre><code>~/.claude/plugins/claude-hud/.usage-cache.json
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Scenario</th>
+<th>Cache TTL</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Successful response</td>
+<td>60 seconds (configurable)</td>
+</tr>
+<tr>
+<td>Failed request</td>
+<td>15 seconds (configurable)</td>
+</tr>
+<tr>
+<td>Rate limited (429)</td>
+<td>Exponential backoff: 60s, 120s, 240s, up to 5 min</td>
+</tr>
+</tbody>
+</table>
+<p>A file-based lock (<code>.usage-cache.lock</code>) prevents concurrent API calls when multiple HUD instances run simultaneously. If the lock is held, the process waits up to 2 seconds for fresh cache data before falling back to stale data.</p>
+<h3 id="credential-resolution" tabindex="-1">Credential Resolution <a class="header-anchor" href="#credential-resolution" aria-hidden="true">#</a></h3>
+<p>On macOS, the plugin reads OAuth tokens from the system Keychain using <code>/usr/bin/security</code>. On other platforms (or when Keychain is unavailable), it falls back to <code>~/.claude/.credentials.json</code>. The credential lookup includes:</p>
+<ol>
+<li>Try macOS Keychain with profile-specific service name</li>
+<li>Try macOS Keychain with legacy service name</li>
+<li>Fall back to file-based credentials</li>
+<li>If all fail, usage display is silently disabled</li>
+</ol>
+<p>A backoff mechanism prevents repeated Keychain prompts — after a failure, the plugin skips Keychain access for 60 seconds.</p>
+<hr>
+<h2 id="file-structure" tabindex="-1">File Structure <a class="header-anchor" href="#file-structure" aria-hidden="true">#</a></h2>
+<pre><code>src/
+├── index.ts              # Entry point, orchestrates the pipeline
+├── stdin.ts              # Reads and parses stdin JSON
+├── transcript.ts         # Parses transcript JSONL for tools/agents/todos
+├── config.ts             # Loads and validates user configuration
+├── config-reader.ts      # Counts CLAUDE.md, MCP, hooks, rules
+├── git.ts                # Git branch, dirty state, ahead/behind
+├── usage-api.ts          # OAuth usage API with file-based caching
+├── types.ts              # Shared TypeScript interfaces
+├── constants.ts          # Shared constants
+├── render/
+│   ├── index.ts          # Render coordinator (layout, wrapping, output)
+│   ├── session-line.ts   # Compact mode session line
+│   ├── tools-line.ts     # Tool activity with spinners
+│   ├── agents-line.ts    # Agent status with elapsed time
+│   ├── todos-line.ts     # Todo progress
+│   ├── colors.ts         # ANSI color helpers
+│   └── lines/
+│       ├── identity-line.ts     # Model and context bar
+│       ├── project-line.ts      # Project name and git info
+│       ├── usage-line.ts        # Plan usage bars
+│       └── environment-line.ts  # Config counts
+</code></pre>
+<hr>
+<h2 id="extension-points" tabindex="-1">Extension Points <a class="header-anchor" href="#extension-points" aria-hidden="true">#</a></h2>
+<p>Claude HUD is designed to be extended with new data sources and display elements.</p>
+<h3 id="adding-a-new-hud-line" tabindex="-1">Adding a New HUD Line <a class="header-anchor" href="#adding-a-new-hud-line" aria-hidden="true">#</a></h3>
+<ol>
+<li>Create a new renderer in <code>src/render/</code> that exports a function accepting <code>RenderContext</code> and returning <code>string | null</code>.</li>
+<li>Add any new data fields to the <code>RenderContext</code> interface in <code>src/types.ts</code>.</li>
+<li>If the data comes from the transcript, add extraction logic in <code>src/transcript.ts</code>.</li>
+<li>Register the renderer in <code>src/render/index.ts</code>.</li>
+<li>Add the new element to the <code>HudElement</code> type in <code>src/config.ts</code> and include it in <code>DEFAULT_ELEMENT_ORDER</code>.</li>
+</ol>
+<h3 id="adding-a-new-data-source" tabindex="-1">Adding a New Data Source <a class="header-anchor" href="#adding-a-new-data-source" aria-hidden="true">#</a></h3>
+<ol>
+<li>Create a new module in <code>src/</code> with an async function that returns the data.</li>
+<li>Add the function to the <code>MainDeps</code> interface in <code>src/index.ts</code>.</li>
+<li>Call it from <code>main()</code> and add the result to <code>RenderContext</code>.</li>
+<li>Reference the data in the appropriate renderer.</li>
+</ol>
+<h3 id="modifying-thresholds" tabindex="-1">Modifying Thresholds <a class="header-anchor" href="#modifying-thresholds" aria-hidden="true">#</a></h3>
+<p>Context color thresholds are defined in the session line renderer (<code>src/render/session-line.ts</code>). The percentage checks that determine color coding can be adjusted there. Usage display thresholds are configurable via <code>config.json</code> without code changes.</p>
+<hr>
+<h2 id="related-topics" tabindex="-1">Related Topics <a class="header-anchor" href="#related-topics" aria-hidden="true">#</a></h2>
+<ul>
+<li><a href="overview.html">Overview</a> — What Claude HUD shows and why it matters</li>
+<li><a href="hud-elements.html">HUD Elements</a> — Detailed guide to every display element</li>
+<li><a href="configuration.html">Configuration</a> — All configuration options and presets</li>
+<li><a href="troubleshooting.html">Troubleshooting</a> — Fixing common issues</li>
+</ul>
+</main>
+    <nav data-ds="toc"><div class="toc-title">On this page</div><ul><li><a href="#high-level-data-flow">High-Level Data Flow</a></li><li><a href="#data-sources">Data Sources</a></li><ul><li><a href="#stdin-json">Stdin JSON</a></li><li><a href="#transcript-jsonl">Transcript JSONL</a></li><li><a href="#configuration-files">Configuration Files</a></li></ul><li><a href="#entry-point-and-orchestration">Entry Point and Orchestration</a></li><li><a href="#rendering-pipeline">Rendering Pipeline</a></li><ul><li><a href="#layout-modes">Layout Modes</a></li><li><a href="#element-renderers">Element Renderers</a></li><li><a href="#terminal-width-handling">Terminal Width Handling</a></li><li><a href="#color-system">Color System</a></li></ul><li><a href="#usage-api-integration">Usage API Integration</a></li><ul><li><a href="#cache-strategy">Cache Strategy</a></li><li><a href="#credential-resolution">Credential Resolution</a></li></ul><li><a href="#file-structure">File Structure</a></li><li><a href="#extension-points">Extension Points</a></li><ul><li><a href="#adding-a-new-hud-line">Adding a New HUD Line</a></li><li><a href="#adding-a-new-data-source">Adding a New Data Source</a></li><li><a href="#modifying-thresholds">Modifying Thresholds</a></li></ul><li><a href="#related-topics">Related Topics</a></li></ul></nav>
+  </div>
+  <footer data-ds="footer">
+    <a href="https://docsmith.aigne.io/" target="_blank" rel="noopener noreferrer" class="docsmith-badge">
+      <svg class="docsmith-badge-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+        <polyline points="14 2 14 8 20 8"></polyline>
+        <line x1="16" y1="13" x2="8" y2="13"></line>
+        <line x1="16" y1="17" x2="8" y2="17"></line>
+        <polyline points="10 9 9 9 8 9"></polyline>
+      </svg>
+      <span>Built with <strong>AIGNE DocSmith</strong></span>
+    </a>
+  </footer>
+
+  <script>document.addEventListener('DOMContentLoaded', function() {
+    if (typeof hljs !== 'undefined') hljs.highlightAll();
+  });</script>
+</body>
+</html>

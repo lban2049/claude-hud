@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>架构 - claude-hud</title>
+  <meta name="description" content="">
+  <meta property="og:title" content="架构">
+  <meta property="og:description" content="">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+  <link rel="stylesheet" href="../../assets/docsmith.css">
+  <link rel="stylesheet" href="../../assets/theme.css">
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github-dark.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js" defer></script>
+  <script src="../../assets/nav.js" defer></script>
+  <script>
+    // Initialize theme from localStorage or system preference
+    (function() {
+      const stored = localStorage.getItem('docsmith-theme');
+      if (stored) {
+        document.documentElement.setAttribute('data-theme', stored);
+      } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      }
+    })();
+
+    function toggleTheme() {
+      const html = document.documentElement;
+      const current = html.getAttribute('data-theme');
+      const next = current === 'dark' ? 'light' : 'dark';
+      html.setAttribute('data-theme', next);
+      localStorage.setItem('docsmith-theme', next);
+    }
+  </script>
+</head>
+<body data-ds-path="/architecture">
+  <header data-ds="header">
+    <a href="/zh/index.html" class="site-title">claude-hud</a>
+    <div class="header-controls">
+
+    <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
+      <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="5"></circle>
+        <line x1="12" y1="1" x2="12" y2="3"></line>
+        <line x1="12" y1="21" x2="12" y2="23"></line>
+        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+        <line x1="1" y1="12" x2="3" y2="12"></line>
+        <line x1="21" y1="12" x2="23" y2="12"></line>
+        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+      </svg>
+      <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+      </svg>
+    </button>
+    </div>
+  </header>
+  <div data-ds="layout">
+    <aside data-ds="sidebar"><!-- nav.js 渲染 --></aside>
+    <main data-ds="content"><h1 id="%E6%9E%B6%E6%9E%84" tabindex="-1">架构 <a class="header-anchor" href="#%E6%9E%B6%E6%9E%84" aria-hidden="true">#</a></h1>
+<p>Claude HUD 的底层工作原理——从数据摄取到终端渲染。</p>
+<blockquote>
+<p><strong>前置知识</strong>：熟悉 <a href="overview.html">Claude HUD 概览</a>和<a href="hud-elements.html">HUD 元素</a>。</p>
+</blockquote>
+<hr>
+<h2 id="%E9%AB%98%E5%B1%82%E6%95%B0%E6%8D%AE%E6%B5%81" tabindex="-1">高层数据流 <a class="header-anchor" href="#%E9%AB%98%E5%B1%82%E6%95%B0%E6%8D%AE%E6%B5%81" aria-hidden="true">#</a></h2>
+<p>Claude Code 大约每 300 毫秒以子进程方式调用一次 HUD 插件。每次调用都是一个全新的 Node.js 进程，负责读取数据、渲染输出，然后退出。没有长期运行的守护进程，也没有内存中的持久状态。</p>
+<p>处理管线分为五个阶段：</p>
+<ol>
+<li><strong>标准输入摄取</strong>——Claude Code 通过管道传入一个 JSON 负载，其中包含模型信息、上下文窗口指标和会话记录文件路径。</li>
+<li><strong>会话记录解析</strong>——插件读取会话记录（磁盘上的 JSONL 文件），从中提取工具调用、Agent 任务和待办事项。</li>
+<li><strong>配置与环境收集</strong>——从文件系统和 API 收集 <a href="http://CLAUDE.md">CLAUDE.md</a> 文件、MCP 服务器、钩子、规则、Git 状态以及 OAuth 用量数据。</li>
+<li><strong>渲染</strong>——每个 HUD 元素被渲染为 ANSI 彩色文本行。</li>
+<li><strong>输出</strong>——文本行打印到标准输出，由 Claude Code 显示为状态栏。</li>
+</ol>
+<p><img src="../../assets/architecture-data-flow/images/en.png" alt="数据流示意图，展示五阶段管线：Claude Code 的标准输入 JSON 流入插件，插件解析会话记录 JSONL 文件，收集配置和环境数据，渲染 HUD 元素，并将 ANSI 文本行输出到标准输出"></p>
+<hr>
+<h2 id="%E6%95%B0%E6%8D%AE%E6%BA%90" tabindex="-1">数据源 <a class="header-anchor" href="#%E6%95%B0%E6%8D%AE%E6%BA%90" aria-hidden="true">#</a></h2>
+<p>Claude HUD 整合三类输入数据。了解这些数据源对于调试意外的显示值或为插件扩展新指标至关重要。</p>
+<h3 id="%E6%A0%87%E5%87%86%E8%BE%93%E5%85%A5-json" tabindex="-1">标准输入 JSON <a class="header-anchor" href="#%E6%A0%87%E5%87%86%E8%BE%93%E5%85%A5-json" aria-hidden="true">#</a></h3>
+<p>每次调用时，Claude Code 都会向插件的标准输入写入一个 JSON 对象。这是准确、实时的会话数据的主要来源。</p>
+<pre><code class="language-typescript">interface StdinData {
+  transcript_path?: string;          // Path to session transcript JSONL
+  cwd?: string;                      // Current working directory
+  model?: {
+    id?: string;                     // Raw model ID (e.g., &quot;anthropic.claude-sonnet-4-20250514&quot;)
+    display_name?: string;           // Human-readable name (e.g., &quot;Sonnet&quot;)
+  };
+  context_window?: {
+    context_window_size?: number;    // Maximum context size in tokens
+    current_usage?: {
+      input_tokens?: number;
+      cache_creation_input_tokens?: number;
+      cache_read_input_tokens?: number;
+    };
+    used_percentage?: number;        // Native percentage (v2.1.6+)
+  };
+}
+</code></pre>
+<p><code>used_percentage</code> 字段在 Claude Code v2.1.6 中引入。当该字段可用时，HUD 会直接使用它而不是手动计算 token 数量——这确保了显示的百分比与 Claude Code 在 <code>/context</code> 中报告的一致。</p>
+<h3 id="%E4%BC%9A%E8%AF%9D%E8%AE%B0%E5%BD%95-jsonl" tabindex="-1">会话记录 JSONL <a class="header-anchor" href="#%E4%BC%9A%E8%AF%9D%E8%AE%B0%E5%BD%95-jsonl" aria-hidden="true">#</a></h3>
+<p>会话记录文件是当前会话中每条消息的按行分隔 JSON 日志。HUD 使用流式 <code>readline</code> 接口逐行解析，提取以下内容：</p>
+<table>
+<thead>
+<tr>
+<th>块类型</th>
+<th>提取的数据</th>
+<th>HUD 元素</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>tool_use</code></td>
+<td>工具名称、目标文件、开始时间</td>
+<td>工具行</td>
+</tr>
+<tr>
+<td><code>tool_result</code></td>
+<td>完成状态、错误标志</td>
+<td>工具行（状态更新）</td>
+</tr>
+<tr>
+<td><code>Task</code> tool_use</td>
+<td>Agent 类型、模型、描述</td>
+<td>Agent 行</td>
+</tr>
+<tr>
+<td><code>TodoWrite</code> tool_use</td>
+<td>完整待办列表</td>
+<td>待办行</td>
+</tr>
+<tr>
+<td><code>TaskCreate</code> / <code>TaskUpdate</code></td>
+<td>单个任务状态变更</td>
+<td>待办行</td>
+</tr>
+</tbody>
+</table>
+<p>当一个 <code>tool_use</code> 块没有匹配的 <code>tool_result</code> 块（通过 ID 匹配）时，该工具被视为"运行中"。HUD 就是通过这种方式为正在进行的操作显示旋转指示器的。</p>
+<h3 id="%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6" tabindex="-1">配置文件 <a class="header-anchor" href="#%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6" aria-hidden="true">#</a></h3>
+<p>插件扫描多个位置以统计环境行中显示的配置项数量：</p>
+<table>
+<thead>
+<tr>
+<th>来源</th>
+<th>统计内容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>~/.claude/CLAUDE.md</code></td>
+<td><a href="http://CLAUDE.md">CLAUDE.md</a> 文件（用户级别）</td>
+</tr>
+<tr>
+<td><code>{cwd}/CLAUDE.md</code>、<code>{cwd}/CLAUDE.local.md</code></td>
+<td><a href="http://CLAUDE.md">CLAUDE.md</a> 文件（项目级别）</td>
+</tr>
+<tr>
+<td><code>~/.claude/settings.json</code></td>
+<td>MCP 服务器、钩子</td>
+</tr>
+<tr>
+<td><code>{cwd}/.mcp.json</code></td>
+<td>项目 MCP 服务器</td>
+</tr>
+<tr>
+<td><code>{cwd}/.claude/settings.json</code></td>
+<td>项目 MCP 服务器、钩子</td>
+</tr>
+<tr>
+<td><code>~/.claude/rules/*.md</code></td>
+<td>规则文件（递归）</td>
+</tr>
+</tbody>
+</table>
+<p>已禁用的 MCP 服务器（列在 <code>disabledMcpServers</code> 或 <code>disabledMcpjsonServers</code> 中）会从计数中减去。当项目 <code>.claude</code> 目录与用户级别目录重叠时，插件也会避免重复计数。</p>
+<hr>
+<h2 id="%E5%85%A5%E5%8F%A3%E7%82%B9%E4%B8%8E%E7%BC%96%E6%8E%92" tabindex="-1">入口点与编排 <a class="header-anchor" href="#%E5%85%A5%E5%8F%A3%E7%82%B9%E4%B8%8E%E7%BC%96%E6%8E%92" aria-hidden="true">#</a></h2>
+<p><code>src/index.ts</code> 中的 <code>main()</code> 函数负责编排整个管线。它使用依赖注入来提高可测试性——每个外部依赖都通过 <code>MainDeps</code> 对象传入，在测试中可以覆盖。</p>
+<pre><code class="language-typescript">export async function main(overrides: Partial&lt;MainDeps&gt; = {}): Promise&lt;void&gt; {
+  const deps: MainDeps = {
+    readStdin, parseTranscript, countConfigs,
+    getGitStatus, getUsage, loadConfig,
+    parseExtraCmdArg, runExtraCmd, render,
+    now: () =&gt; Date.now(),
+    log: console.log,
+    ...overrides,
+  };
+
+  const stdin = await deps.readStdin();
+  if (!stdin) {
+    deps.log('[claude-hud] Initializing...');
+    return;
+  }
+  // ... orchestration continues
+}
+</code></pre>
+<p>当没有标准输入数据可用时（例如首次调用或交互式运行时），插件会输出初始化消息并正常退出。</p>
+<p>编排顺序：</p>
+<ol>
+<li>读取并解析标准输入 JSON</li>
+<li>根据标准输入中的路径解析会话记录文件</li>
+<li>从文件系统统计配置项</li>
+<li>加载用户配置（<code>config.json</code>）</li>
+<li>可选地获取 Git 状态和 OAuth 用量数据</li>
+<li>构建包含所有收集数据的 <code>RenderContext</code> 对象</li>
+<li>将上下文传递给渲染管线</li>
+</ol>
+<hr>
+<h2 id="%E6%B8%B2%E6%9F%93%E7%AE%A1%E7%BA%BF" tabindex="-1">渲染管线 <a class="header-anchor" href="#%E6%B8%B2%E6%9F%93%E7%AE%A1%E7%BA%BF" aria-hidden="true">#</a></h2>
+<p>渲染系统由一组独立的行渲染器组成，由 <code>src/render/index.ts</code> 协调。每个渲染器接收完整的 <code>RenderContext</code> 并返回格式化字符串或 <code>null</code>（当没有内容需要显示时）。</p>
+<h3 id="%E5%B8%83%E5%B1%80%E6%A8%A1%E5%BC%8F" tabindex="-1">布局模式 <a class="header-anchor" href="#%E5%B8%83%E5%B1%80%E6%A8%A1%E5%BC%8F" aria-hidden="true">#</a></h3>
+<p>插件支持两种布局模式，由 <code>lineLayout</code> 配置控制：</p>
+<ul>
+<li><strong>展开模式</strong>（默认）——每个 HUD 元素独占一行。元素顺序可通过 <code>elementOrder</code> 配置。相邻的 <code>context</code> 和 <code>usage</code> 元素会合并到同一行，以 <code>│</code> 分隔。</li>
+<li><strong>紧凑模式</strong>——将会话信息合并为一行紧凑的文本。活动指示器（工具、Agent、待办）显示在下方。</li>
+</ul>
+<h3 id="%E5%85%83%E7%B4%A0%E6%B8%B2%E6%9F%93%E5%99%A8" tabindex="-1">元素渲染器 <a class="header-anchor" href="#%E5%85%83%E7%B4%A0%E6%B8%B2%E6%9F%93%E5%99%A8" aria-hidden="true">#</a></h3>
+<table>
+<thead>
+<tr>
+<th>元素</th>
+<th>渲染器文件</th>
+<th>始终显示</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>项目</td>
+<td><code>src/render/lines/project-line.ts</code></td>
+<td>是</td>
+</tr>
+<tr>
+<td>上下文</td>
+<td><code>src/render/lines/identity-line.ts</code></td>
+<td>是</td>
+</tr>
+<tr>
+<td>用量</td>
+<td><code>src/render/lines/usage-line.ts</code></td>
+<td>有数据时</td>
+</tr>
+<tr>
+<td>环境</td>
+<td><code>src/render/lines/environment-line.ts</code></td>
+<td>达到阈值时</td>
+</tr>
+<tr>
+<td>工具</td>
+<td><code>src/render/tools-line.ts</code></td>
+<td>使用工具时</td>
+</tr>
+<tr>
+<td>Agent</td>
+<td><code>src/render/agents-line.ts</code></td>
+<td>Agent 活跃时</td>
+</tr>
+<tr>
+<td>待办</td>
+<td><code>src/render/todos-line.ts</code></td>
+<td>存在待办时</td>
+</tr>
+</tbody>
+</table>
+<h3 id="%E7%BB%88%E7%AB%AF%E5%AE%BD%E5%BA%A6%E5%A4%84%E7%90%86" tabindex="-1">终端宽度处理 <a class="header-anchor" href="#%E7%BB%88%E7%AB%AF%E5%AE%BD%E5%BA%A6%E5%A4%84%E7%90%86" aria-hidden="true">#</a></h3>
+<p>渲染管线通过 <code>process.stdout.columns</code> 检测终端宽度（回退到 <code>COLUMNS</code> 环境变量）。超出终端宽度的行会在分隔符边界（<code>|</code> 或 <code>│</code>）处换行，而不是在单词中间断开。如果单个片段仍然超出宽度，则用省略号截断。</p>
+<p>宽度计算考虑了 ANSI 转义序列（占零个视觉宽度）、表情符号字形（占两列）以及 Unicode 组合字符。</p>
+<h3 id="%E9%A2%9C%E8%89%B2%E7%B3%BB%E7%BB%9F" tabindex="-1">颜色系统 <a class="header-anchor" href="#%E9%A2%9C%E8%89%B2%E7%B3%BB%E7%BB%9F" aria-hidden="true">#</a></h3>
+<p>颜色通过 <code>src/render/colors.ts</code> 中的辅助函数以 ANSI 转义码应用。上下文使用阈值决定进度条颜色：</p>
+<table>
+<thead>
+<tr>
+<th>范围</th>
+<th>颜色</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0–70%</td>
+<td>绿色</td>
+<td>健康——剩余上下文充足</td>
+</tr>
+<tr>
+<td>70–85%</td>
+<td>黄色</td>
+<td>警告——考虑收尾或压缩</td>
+</tr>
+<tr>
+<td>85%+</td>
+<td>红色</td>
+<td>危急——显示 token 明细以供诊断</td>
+</tr>
+</tbody>
+</table>
+<p>所有颜色名称可通过 <code>config.json</code> 中的 <code>colors</code> 字段配置，支持：<code>red</code>、<code>green</code>、<code>yellow</code>、<code>magenta</code>、<code>cyan</code>、<code>brightBlue</code> 和 <code>brightMagenta</code>。</p>
+<hr>
+<h2 id="%E7%94%A8%E9%87%8F-api-%E9%9B%86%E6%88%90" tabindex="-1">用量 API 集成 <a class="header-anchor" href="#%E7%94%A8%E9%87%8F-api-%E9%9B%86%E6%88%90" aria-hidden="true">#</a></h2>
+<p>HUD 可选地从 Anthropic OAuth API（<code>api.anthropic.com/api/oauth/usage</code>）获取套餐用量数据。由于插件每约 300 毫秒作为新进程运行一次，因此通过基于文件的缓存层来避免过多的 API 调用。</p>
+<h3 id="%E7%BC%93%E5%AD%98%E7%AD%96%E7%95%A5" tabindex="-1">缓存策略 <a class="header-anchor" href="#%E7%BC%93%E5%AD%98%E7%AD%96%E7%95%A5" aria-hidden="true">#</a></h3>
+<pre><code>~/.claude/plugins/claude-hud/.usage-cache.json
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>场景</th>
+<th>缓存 TTL</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>成功响应</td>
+<td>60 秒（可配置）</td>
+</tr>
+<tr>
+<td>请求失败</td>
+<td>15 秒（可配置）</td>
+</tr>
+<tr>
+<td>被限流 (429)</td>
+<td>指数退避：60 秒、120 秒、240 秒，最长 5 分钟</td>
+</tr>
+</tbody>
+</table>
+<p>基于文件的锁（<code>.usage-cache.lock</code>）可防止多个 HUD 实例同时运行时发起并发 API 调用。如果锁被持有，进程最多等待 2 秒以获取新的缓存数据，然后回退到过期数据。</p>
+<h3 id="%E5%87%AD%E6%8D%AE%E8%A7%A3%E6%9E%90" tabindex="-1">凭据解析 <a class="header-anchor" href="#%E5%87%AD%E6%8D%AE%E8%A7%A3%E6%9E%90" aria-hidden="true">#</a></h3>
+<p>在 macOS 上，插件使用 <code>/usr/bin/security</code> 从系统钥匙串读取 OAuth 令牌。在其他平台（或钥匙串不可用时），回退到 <code>~/.claude/.credentials.json</code>。凭据查找流程包括：</p>
+<ol>
+<li>尝试使用特定配置文件的服务名称访问 macOS 钥匙串</li>
+<li>尝试使用旧版服务名称访问 macOS 钥匙串</li>
+<li>回退到基于文件的凭据</li>
+<li>如果全部失败，静默禁用用量显示</li>
+</ol>
+<p>退避机制可防止重复的钥匙串提示——失败后，插件会在 60 秒内跳过钥匙串访问。</p>
+<hr>
+<h2 id="%E6%96%87%E4%BB%B6%E7%BB%93%E6%9E%84" tabindex="-1">文件结构 <a class="header-anchor" href="#%E6%96%87%E4%BB%B6%E7%BB%93%E6%9E%84" aria-hidden="true">#</a></h2>
+<pre><code>src/
+├── index.ts              # Entry point, orchestrates the pipeline
+├── stdin.ts              # Reads and parses stdin JSON
+├── transcript.ts         # Parses transcript JSONL for tools/agents/todos
+├── config.ts             # Loads and validates user configuration
+├── config-reader.ts      # Counts CLAUDE.md, MCP, hooks, rules
+├── git.ts                # Git branch, dirty state, ahead/behind
+├── usage-api.ts          # OAuth usage API with file-based caching
+├── types.ts              # Shared TypeScript interfaces
+├── constants.ts          # Shared constants
+├── render/
+│   ├── index.ts          # Render coordinator (layout, wrapping, output)
+│   ├── session-line.ts   # Compact mode session line
+│   ├── tools-line.ts     # Tool activity with spinners
+│   ├── agents-line.ts    # Agent status with elapsed time
+│   ├── todos-line.ts     # Todo progress
+│   ├── colors.ts         # ANSI color helpers
+│   └── lines/
+│       ├── identity-line.ts     # Model and context bar
+│       ├── project-line.ts      # Project name and git info
+│       ├── usage-line.ts        # Plan usage bars
+│       └── environment-line.ts  # Config counts
+</code></pre>
+<hr>
+<h2 id="%E6%89%A9%E5%B1%95%E7%82%B9" tabindex="-1">扩展点 <a class="header-anchor" href="#%E6%89%A9%E5%B1%95%E7%82%B9" aria-hidden="true">#</a></h2>
+<p>Claude HUD 的设计便于扩展新的数据源和显示元素。</p>
+<h3 id="%E6%B7%BB%E5%8A%A0%E6%96%B0%E7%9A%84-hud-%E8%A1%8C" tabindex="-1">添加新的 HUD 行 <a class="header-anchor" href="#%E6%B7%BB%E5%8A%A0%E6%96%B0%E7%9A%84-hud-%E8%A1%8C" aria-hidden="true">#</a></h3>
+<ol>
+<li>在 <code>src/render/</code> 中创建新的渲染器，导出一个接受 <code>RenderContext</code> 并返回 <code>string | null</code> 的函数。</li>
+<li>在 <code>src/types.ts</code> 的 <code>RenderContext</code> 接口中添加所需的新数据字段。</li>
+<li>如果数据来自会话记录，在 <code>src/transcript.ts</code> 中添加提取逻辑。</li>
+<li>在 <code>src/render/index.ts</code> 中注册渲染器。</li>
+<li>在 <code>src/config.ts</code> 的 <code>HudElement</code> 类型中添加新元素，并将其加入 <code>DEFAULT_ELEMENT_ORDER</code>。</li>
+</ol>
+<h3 id="%E6%B7%BB%E5%8A%A0%E6%96%B0%E7%9A%84%E6%95%B0%E6%8D%AE%E6%BA%90" tabindex="-1">添加新的数据源 <a class="header-anchor" href="#%E6%B7%BB%E5%8A%A0%E6%96%B0%E7%9A%84%E6%95%B0%E6%8D%AE%E6%BA%90" aria-hidden="true">#</a></h3>
+<ol>
+<li>在 <code>src/</code> 中创建新模块，包含一个返回数据的异步函数。</li>
+<li>将该函数添加到 <code>src/index.ts</code> 的 <code>MainDeps</code> 接口中。</li>
+<li>在 <code>main()</code> 中调用它，并将结果添加到 <code>RenderContext</code>。</li>
+<li>在相应的渲染器中引用该数据。</li>
+</ol>
+<h3 id="%E4%BF%AE%E6%94%B9%E9%98%88%E5%80%BC" tabindex="-1">修改阈值 <a class="header-anchor" href="#%E4%BF%AE%E6%94%B9%E9%98%88%E5%80%BC" aria-hidden="true">#</a></h3>
+<p>上下文颜色阈值定义在会话行渲染器（<code>src/render/session-line.ts</code>）中。决定颜色编码的百分比检查可以在那里调整。用量显示阈值可通过 <code>config.json</code> 配置，无需修改代码。</p>
+<hr>
+<h2 id="%E7%9B%B8%E5%85%B3%E4%B8%BB%E9%A2%98" tabindex="-1">相关主题 <a class="header-anchor" href="#%E7%9B%B8%E5%85%B3%E4%B8%BB%E9%A2%98" aria-hidden="true">#</a></h2>
+<ul>
+<li><a href="overview.html">概览</a>——Claude HUD 展示了什么以及为何重要</li>
+<li><a href="hud-elements.html">HUD 元素</a>——每个显示元素的详细指南</li>
+<li><a href="configuration.html">配置</a>——所有配置选项和预设</li>
+<li><a href="troubleshooting.html">故障排除</a>——修复常见问题</li>
+</ul>
+</main>
+    <nav data-ds="toc"><div class="toc-title">本页目录</div><ul><li><a href="#%E9%AB%98%E5%B1%82%E6%95%B0%E6%8D%AE%E6%B5%81">高层数据流</a></li><li><a href="#%E6%95%B0%E6%8D%AE%E6%BA%90">数据源</a></li><ul><li><a href="#%E6%A0%87%E5%87%86%E8%BE%93%E5%85%A5-json">标准输入 JSON</a></li><li><a href="#%E4%BC%9A%E8%AF%9D%E8%AE%B0%E5%BD%95-jsonl">会话记录 JSONL</a></li><li><a href="#%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6">配置文件</a></li></ul><li><a href="#%E5%85%A5%E5%8F%A3%E7%82%B9%E4%B8%8E%E7%BC%96%E6%8E%92">入口点与编排</a></li><li><a href="#%E6%B8%B2%E6%9F%93%E7%AE%A1%E7%BA%BF">渲染管线</a></li><ul><li><a href="#%E5%B8%83%E5%B1%80%E6%A8%A1%E5%BC%8F">布局模式</a></li><li><a href="#%E5%85%83%E7%B4%A0%E6%B8%B2%E6%9F%93%E5%99%A8">元素渲染器</a></li><li><a href="#%E7%BB%88%E7%AB%AF%E5%AE%BD%E5%BA%A6%E5%A4%84%E7%90%86">终端宽度处理</a></li><li><a href="#%E9%A2%9C%E8%89%B2%E7%B3%BB%E7%BB%9F">颜色系统</a></li></ul><li><a href="#%E7%94%A8%E9%87%8F-api-%E9%9B%86%E6%88%90">用量 API 集成</a></li><ul><li><a href="#%E7%BC%93%E5%AD%98%E7%AD%96%E7%95%A5">缓存策略</a></li><li><a href="#%E5%87%AD%E6%8D%AE%E8%A7%A3%E6%9E%90">凭据解析</a></li></ul><li><a href="#%E6%96%87%E4%BB%B6%E7%BB%93%E6%9E%84">文件结构</a></li><li><a href="#%E6%89%A9%E5%B1%95%E7%82%B9">扩展点</a></li><ul><li><a href="#%E6%B7%BB%E5%8A%A0%E6%96%B0%E7%9A%84-hud-%E8%A1%8C">添加新的 HUD 行</a></li><li><a href="#%E6%B7%BB%E5%8A%A0%E6%96%B0%E7%9A%84%E6%95%B0%E6%8D%AE%E6%BA%90">添加新的数据源</a></li><li><a href="#%E4%BF%AE%E6%94%B9%E9%98%88%E5%80%BC">修改阈值</a></li></ul><li><a href="#%E7%9B%B8%E5%85%B3%E4%B8%BB%E9%A2%98">相关主题</a></li></ul></nav>
+  </div>
+  <footer data-ds="footer">
+    <a href="https://docsmith.aigne.io/" target="_blank" rel="noopener noreferrer" class="docsmith-badge">
+      <svg class="docsmith-badge-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+        <polyline points="14 2 14 8 20 8"></polyline>
+        <line x1="16" y1="13" x2="8" y2="13"></line>
+        <line x1="16" y1="17" x2="8" y2="17"></line>
+        <polyline points="10 9 9 9 8 9"></polyline>
+      </svg>
+      <span>Built with <strong>AIGNE DocSmith</strong></span>
+    </a>
+  </footer>
+
+  <script>document.addEventListener('DOMContentLoaded', function() {
+    if (typeof hljs !== 'undefined') hljs.highlightAll();
+  });</script>
+</body>
+</html>

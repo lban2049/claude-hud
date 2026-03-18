@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HUD 元素 - claude-hud</title>
+  <meta name="description" content="">
+  <meta property="og:title" content="HUD 元素">
+  <meta property="og:description" content="">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+  <link rel="stylesheet" href="../../assets/docsmith.css">
+  <link rel="stylesheet" href="../../assets/theme.css">
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github-dark.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js" defer></script>
+  <script src="../../assets/nav.js" defer></script>
+  <script>
+    // Initialize theme from localStorage or system preference
+    (function() {
+      const stored = localStorage.getItem('docsmith-theme');
+      if (stored) {
+        document.documentElement.setAttribute('data-theme', stored);
+      } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      }
+    })();
+
+    function toggleTheme() {
+      const html = document.documentElement;
+      const current = html.getAttribute('data-theme');
+      const next = current === 'dark' ? 'light' : 'dark';
+      html.setAttribute('data-theme', next);
+      localStorage.setItem('docsmith-theme', next);
+    }
+  </script>
+</head>
+<body data-ds-path="/hud-elements">
+  <header data-ds="header">
+    <a href="/zh/index.html" class="site-title">claude-hud</a>
+    <div class="header-controls">
+
+    <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
+      <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="5"></circle>
+        <line x1="12" y1="1" x2="12" y2="3"></line>
+        <line x1="12" y1="21" x2="12" y2="23"></line>
+        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+        <line x1="1" y1="12" x2="3" y2="12"></line>
+        <line x1="21" y1="12" x2="23" y2="12"></line>
+        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+      </svg>
+      <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+      </svg>
+    </button>
+    </div>
+  </header>
+  <div data-ds="layout">
+    <aside data-ds="sidebar"><!-- nav.js 渲染 --></aside>
+    <main data-ds="content"><h1 id="hud-%E5%85%83%E7%B4%A0" tabindex="-1">HUD 元素 <a class="header-anchor" href="#hud-%E5%85%83%E7%B4%A0" aria-hidden="true">#</a></h1>
+<p>Claude HUD 在多行中显示有关 Claude Code 会话的实时信息。每个元素提供一项特定数据——从上下文窗口健康状况到工具活动和待办事项进度。本页说明你在 HUD 中看到的每一个指示器、进度条和行。</p>
+<blockquote>
+<p><strong>前提条件</strong>：你需要已安装并运行 Claude HUD。请参阅<a href="getting-started.html">快速开始</a>获取设置说明。</p>
+</blockquote>
+<p><img src="../../assets/hud-elements-overview/images/en.png" alt="Claude HUD 以展开布局显示所有元素，包括项目信息、上下文进度条、使用量限制、工具、Agent 和待办事项"></p>
+<h2 id="%E5%B8%83%E5%B1%80%E6%A8%A1%E5%BC%8F" tabindex="-1">布局模式 <a class="header-anchor" href="#%E5%B8%83%E5%B1%80%E6%A8%A1%E5%BC%8F" aria-hidden="true">#</a></h2>
+<p>Claude HUD 支持两种布局模式，决定元素的排列方式：</p>
+<h3 id="%E5%B1%95%E5%BC%80%E5%B8%83%E5%B1%80%EF%BC%88%E9%BB%98%E8%AE%A4%EF%BC%89" tabindex="-1">展开布局（默认） <a class="header-anchor" href="#%E5%B1%95%E5%BC%80%E5%B8%83%E5%B1%80%EF%BC%88%E9%BB%98%E8%AE%A4%EF%BC%89" aria-hidden="true">#</a></h3>
+<p>在展开布局中，每个元素类别占据独立的一行。顺序由 <code>elementOrder</code> 配置控制：</p>
+<pre><code>[Opus | Max] │ my-project git:(main*)
+Context █████░░░░░ 45% │ Usage ██░░░░░░░░ 25% (1h 30m / 5h)
+3 CLAUDE.md | 2 MCPs | 1 hooks
+◐ Edit: auth.ts | ✓ Read ×3 | ✓ Grep ×2
+◐ explore [haiku]: Finding auth code (2m 15s)
+▸ Fix authentication bug (2/5)
+</code></pre>
+<p>七个元素类别为：<code>project</code>、<code>context</code>、<code>usage</code>、<code>environment</code>、<code>tools</code>、<code>agents</code> 和 <code>todos</code>。当 <code>context</code> 和 <code>usage</code> 在 <code>elementOrder</code> 中相邻时，它们会合并到同一行，以 <code>│</code> 分隔。</p>
+<h3 id="%E7%B4%A7%E5%87%91%E5%B8%83%E5%B1%80" tabindex="-1">紧凑布局 <a class="header-anchor" href="#%E7%B4%A7%E5%87%91%E5%B8%83%E5%B1%80" aria-hidden="true">#</a></h3>
+<p>在紧凑布局中，所有会话信息折叠为一行，活动行（工具、Agent、待办事项）显示在下方：</p>
+<pre><code>[Opus | Max] █████░░░░░ 45% | my-project git:(main*) | 3 CLAUDE.md | ██░░░░░░░░ 25% (1h 30m / 5h) | ⏱️ 5m
+◐ Edit: auth.ts | ✓ Read ×3
+</code></pre>
+<p>使用以下配置切换布局：</p>
+<pre><code class="language-json">{ &quot;lineLayout&quot;: &quot;expanded&quot; }
+</code></pre>
+<pre><code class="language-json">{ &quot;lineLayout&quot;: &quot;compact&quot; }
+</code></pre>
+<h2 id="%E9%A1%B9%E7%9B%AE%E8%A1%8C" tabindex="-1">项目行 <a class="header-anchor" href="#%E9%A1%B9%E7%9B%AE%E8%A1%8C" aria-hidden="true">#</a></h2>
+<p>项目行显示你的模型、工作目录和 git 状态。在两种布局中都显示为第一行。</p>
+<h3 id="%E6%A8%A1%E5%9E%8B%E6%A0%87%E8%AF%86" tabindex="-1">模型标识 <a class="header-anchor" href="#%E6%A8%A1%E5%9E%8B%E6%A0%87%E8%AF%86" aria-hidden="true">#</a></h3>
+<p>显示当前活动的模型名称和计费来源：</p>
+<pre><code>[Opus | Max]        ← 模型名称 + 订阅计划（Pro/Max/Team）
+[Opus | API]        ← 模型名称 + API 密钥计费
+[Opus | Bedrock]    ← 模型名称 + AWS Bedrock 提供商
+[Opus]              ← 仅模型名称（未检测到计划）
+</code></pre>
+<p>模型名称来自 Claude Code 的标准输入 JSON 数据。计费标签的确定规则为：</p>
+<ol>
+<li><strong>提供商标签</strong>（如 <code>Bedrock</code>）——如果可用则优先显示</li>
+<li><strong>计划名称</strong>（如 <code>Max</code>、<code>Pro</code>）——来自使用量 API</li>
+<li><strong>API 标识</strong>——当设置了 <code>ANTHROPIC_API_KEY</code> 时显示为红色 <code>API</code></li>
+</ol>
+<p>通过 <code>display.showModel</code> 开关控制（默认：<code>true</code>）。</p>
+<h3 id="%E9%A1%B9%E7%9B%AE%E8%B7%AF%E5%BE%84" tabindex="-1">项目路径 <a class="header-anchor" href="#%E9%A1%B9%E7%9B%AE%E8%B7%AF%E5%BE%84" aria-hidden="true">#</a></h3>
+<p>显示当前工作目录，截断为可配置的路径层级数：</p>
+<pre><code>my-project              ← pathLevels: 1（默认）
+apps/my-project         ← pathLevels: 2
+dev/apps/my-project     ← pathLevels: 3
+</code></pre>
+<p>配置方式：</p>
+<pre><code class="language-json">{ &quot;pathLevels&quot;: 2 }
+</code></pre>
+<p>通过 <code>display.showProject</code> 开关控制（默认：<code>true</code>）。</p>
+<h3 id="git-%E7%8A%B6%E6%80%81" tabindex="-1">Git 状态 <a class="header-anchor" href="#git-%E7%8A%B6%E6%80%81" aria-hidden="true">#</a></h3>
+<p>显示当前分支和可选的变更指示器：</p>
+<pre><code>git:(main)              ← 干净分支
+git:(main*)             ← 存在未提交的更改（脏状态）
+git:(main ↑2 ↓1)       ← 领先/落后远程
+git:(main* !3 +1 ✘2 ?4)← 完整文件统计
+</code></pre>
+<p>文件统计符号：</p>
+<table>
+<thead>
+<tr>
+<th>符号</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>*</code></td>
+<td>存在未提交的更改</td>
+</tr>
+<tr>
+<td><code>↑N</code></td>
+<td>领先远程 N 个提交</td>
+</tr>
+<tr>
+<td><code>↓N</code></td>
+<td>落后远程 N 个提交</td>
+</tr>
+<tr>
+<td><code>!N</code></td>
+<td>N 个已修改文件</td>
+</tr>
+<tr>
+<td><code>+N</code></td>
+<td>N 个已添加/暂存文件</td>
+</tr>
+<tr>
+<td><code>✘N</code></td>
+<td>N 个已删除文件</td>
+</tr>
+<tr>
+<td><code>?N</code></td>
+<td>N 个未跟踪文件</td>
+</tr>
+</tbody>
+</table>
+<p>配置 git 显示：</p>
+<pre><code class="language-json">{
+  &quot;gitStatus&quot;: {
+    &quot;enabled&quot;: true,
+    &quot;showDirty&quot;: true,
+    &quot;showAheadBehind&quot;: true,
+    &quot;showFileStats&quot;: true
+  }
+}
+</code></pre>
+<h3 id="%E4%BC%9A%E8%AF%9D%E5%90%8D%E7%A7%B0" tabindex="-1">会话名称 <a class="header-anchor" href="#%E4%BC%9A%E8%AF%9D%E5%90%8D%E7%A7%B0" aria-hidden="true">#</a></h3>
+<p>启用后，显示会话标识符或通过 <code>/rename</code> 设置的自定义标题：</p>
+<pre><code>[Opus | Max] │ my-project git:(main) │ fix-auth-flow
+</code></pre>
+<p>通过 <code>display.showSessionName</code> 开关控制（默认：<code>false</code>）。</p>
+<h2 id="%E4%B8%8A%E4%B8%8B%E6%96%87%E8%A1%8C" tabindex="-1">上下文行 <a class="header-anchor" href="#%E4%B8%8A%E4%B8%8B%E6%96%87%E8%A1%8C" aria-hidden="true">#</a></h2>
+<p>上下文行显示上下文窗口的使用情况。这是最重要的指示器之一——当上下文填满时，Claude Code 会触发自动压缩以清除对话历史。</p>
+<h3 id="%E4%B8%8A%E4%B8%8B%E6%96%87%E8%BF%9B%E5%BA%A6%E6%9D%A1" tabindex="-1">上下文进度条 <a class="header-anchor" href="#%E4%B8%8A%E4%B8%8B%E6%96%87%E8%BF%9B%E5%BA%A6%E6%9D%A1" aria-hidden="true">#</a></h3>
+<p>一个 10 字符的可视化进度条，随上下文使用量的增加从左到右填充：</p>
+<pre><code>Context █████░░░░░ 45%     ← 绿色：健康
+Context ███████░░░ 70%     ← 黄色：警告
+Context █████████░ 90%     ← 红色：危急
+</code></pre>
+<p>颜色阈值：</p>
+<table>
+<thead>
+<tr>
+<th>百分比</th>
+<th>颜色</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0-69%</td>
+<td>绿色</td>
+<td>健康——空间充裕</td>
+</tr>
+<tr>
+<td>70-84%</td>
+<td>黄色</td>
+<td>警告——建议尽快完成复杂任务</td>
+</tr>
+<tr>
+<td>85-100%</td>
+<td>红色</td>
+<td>危急——自动压缩可能即将触发</td>
+</tr>
+</tbody>
+</table>
+<p>通过 <code>display.showContextBar</code> 开关控制（默认：<code>true</code>）。</p>
+<h3 id="%E4%B8%8A%E4%B8%8B%E6%96%87%E6%95%B0%E5%80%BC%E6%98%BE%E7%A4%BA" tabindex="-1">上下文数值显示 <a class="header-anchor" href="#%E4%B8%8A%E4%B8%8B%E6%96%87%E6%95%B0%E5%80%BC%E6%98%BE%E7%A4%BA" aria-hidden="true">#</a></h3>
+<p>进度条旁边的数值可以显示三种格式：</p>
+<pre><code>Context █████░░░░░ 45%          ← percent（默认）
+Context █████░░░░░ 45k/200k    ← tokens
+Context █████░░░░░ 55%          ← remaining
+</code></pre>
+<p>配置方式：</p>
+<pre><code class="language-json">{ &quot;display&quot;: { &quot;contextValue&quot;: &quot;percent&quot; } }
+</code></pre>
+<p>可选值：<code>&quot;percent&quot;</code>、<code>&quot;tokens&quot;</code>、<code>&quot;remaining&quot;</code>。</p>
+<h3 id="token-%E6%98%8E%E7%BB%86" tabindex="-1">Token 明细 <a class="header-anchor" href="#token-%E6%98%8E%E7%BB%86" aria-hidden="true">#</a></h3>
+<p>当上下文使用量达到 85% 或更高时，Token 明细会自动显示，展示输入 token 数和缓存使用量：</p>
+<pre><code>Context █████████░ 90% (in: 180k, cache: 45k)
+</code></pre>
+<p>这有助于你了解哪些内容占用了上下文空间。Token 计数格式为 <code>k</code>（千）或 <code>M</code>（百万）。</p>
+<p>通过 <code>display.showTokenBreakdown</code> 开关控制（默认：<code>true</code>）。</p>
+<h3 id="%E8%87%AA%E5%8A%A8%E5%8E%8B%E7%BC%A9%E7%BC%93%E5%86%B2%E5%8C%BA" tabindex="-1">自动压缩缓冲区 <a class="header-anchor" href="#%E8%87%AA%E5%8A%A8%E5%8E%8B%E7%BC%A9%E7%BC%93%E5%86%B2%E5%8C%BA" aria-hidden="true">#</a></h3>
+<p>默认情况下，Claude HUD 在计算上下文百分比时会考虑自动压缩缓冲区。这意味着显示的百分比反映的是可用上下文而非原始使用量：</p>
+<ul>
+<li><strong><code>enabled</code></strong>（默认）：百分比考虑自动压缩缓冲区，更准确地反映自动压缩何时触发</li>
+<li><strong><code>disabled</code></strong>：显示不含缓冲区调整的原始 token 百分比</li>
+</ul>
+<pre><code class="language-json">{ &quot;display&quot;: { &quot;autocompactBuffer&quot;: &quot;disabled&quot; } }
+</code></pre>
+<h2 id="%E4%BD%BF%E7%94%A8%E9%87%8F%E8%A1%8C" tabindex="-1">使用量行 <a class="header-anchor" href="#%E4%BD%BF%E7%94%A8%E9%87%8F%E8%A1%8C" aria-hidden="true">#</a></h2>
+<p>使用量行跟踪 Pro、Max 和 Team 计划的速率限制消耗情况。它显示两个使用量窗口：5 小时和 7 天。</p>
+<h3 id="5-%E5%B0%8F%E6%97%B6%E7%AA%97%E5%8F%A3" tabindex="-1">5 小时窗口 <a class="header-anchor" href="#5-%E5%B0%8F%E6%97%B6%E7%AA%97%E5%8F%A3" aria-hidden="true">#</a></h3>
+<p>在使用量数据可用时始终显示：</p>
+<pre><code>Usage ██░░░░░░░░ 25% (1h 30m / 5h)
+</code></pre>
+<p>进度条和百分比显示 5 小时速率限制的消耗量。括号中的时间显示窗口何时重置。</p>
+<h3 id="7-%E5%A4%A9%E7%AA%97%E5%8F%A3" tabindex="-1">7 天窗口 <a class="header-anchor" href="#7-%E5%A4%A9%E7%AA%97%E5%8F%A3" aria-hidden="true">#</a></h3>
+<p>当 7 天使用量超过 <code>sevenDayThreshold</code>（默认：80%）时显示：</p>
+<pre><code>Usage ██░░░░░░░░ 25% (1h 30m / 5h) | ██████████ 85% (2d / 7d)
+</code></pre>
+<p>配置阈值：</p>
+<pre><code class="language-json">{ &quot;display&quot;: { &quot;sevenDayThreshold&quot;: 50 } }
+</code></pre>
+<p>设置为 <code>0</code> 可始终显示 7 天窗口。</p>
+<h3 id="%E4%BD%BF%E7%94%A8%E9%87%8F%E9%A2%9C%E8%89%B2%E6%AF%94%E4%BE%8B" tabindex="-1">使用量颜色比例 <a class="header-anchor" href="#%E4%BD%BF%E7%94%A8%E9%87%8F%E9%A2%9C%E8%89%B2%E6%AF%94%E4%BE%8B" aria-hidden="true">#</a></h3>
+<p>使用量进度条采用与上下文进度条不同的颜色比例：</p>
+<table>
+<thead>
+<tr>
+<th>百分比</th>
+<th>颜色</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0-74%</td>
+<td>亮蓝色</td>
+<td>正常使用</td>
+</tr>
+<tr>
+<td>75-89%</td>
+<td>亮品红色</td>
+<td>接近限制</td>
+</tr>
+<tr>
+<td>90-100%</td>
+<td>红色</td>
+<td>接近或达到限制</td>
+</tr>
+</tbody>
+</table>
+<h3 id="%E4%BD%BF%E7%94%A8%E9%87%8F%E9%98%88%E5%80%BC" tabindex="-1">使用量阈值 <a class="header-anchor" href="#%E4%BD%BF%E7%94%A8%E9%87%8F%E9%98%88%E5%80%BC" aria-hidden="true">#</a></h3>
+<p>当使用量低于阈值时隐藏使用量显示：</p>
+<pre><code class="language-json">{ &quot;display&quot;: { &quot;usageThreshold&quot;: 20 } }
+</code></pre>
+<p>设置此项后，使用量行仅在使用量达到 20% 或更高时才显示。</p>
+<h3 id="%E8%BE%BE%E5%88%B0%E9%99%90%E5%88%B6%E7%8A%B6%E6%80%81" tabindex="-1">达到限制状态 <a class="header-anchor" href="#%E8%BE%BE%E5%88%B0%E9%99%90%E5%88%B6%E7%8A%B6%E6%80%81" aria-hidden="true">#</a></h3>
+<p>当任一使用量窗口达到 100% 时，显示变为危急警告：</p>
+<pre><code>Usage ⚠ Limit reached (resets 45m)
+</code></pre>
+<p>重置时间告诉你窗口何时重置。</p>
+<h3 id="%E7%BA%AF%E6%96%87%E6%9C%AC%E6%A8%A1%E5%BC%8F" tabindex="-1">纯文本模式 <a class="header-anchor" href="#%E7%BA%AF%E6%96%87%E6%9C%AC%E6%A8%A1%E5%BC%8F" aria-hidden="true">#</a></h3>
+<p>禁用使用量进度条以显示纯文本标签：</p>
+<pre><code class="language-json">{ &quot;display&quot;: { &quot;usageBarEnabled&quot;: false } }
+</code></pre>
+<p>效果：</p>
+<pre><code>Usage 5h: 25% (1h 30m) | 7d: 85% (2d)
+</code></pre>
+<h3 id="%E8%B0%81%E5%8F%AF%E4%BB%A5%E7%9C%8B%E5%88%B0%E4%BD%BF%E7%94%A8%E9%87%8F" tabindex="-1">谁可以看到使用量 <a class="header-anchor" href="#%E8%B0%81%E5%8F%AF%E4%BB%A5%E7%9C%8B%E5%88%B0%E4%BD%BF%E7%94%A8%E9%87%8F" aria-hidden="true">#</a></h3>
+<p>使用量显示需要 Anthropic 订阅（Pro、Max 或 Team）。以下情况不会显示：</p>
+<ul>
+<li>API 密钥用户（按 token 计费，没有速率限制）</li>
+<li>AWS Bedrock 或自定义 base URL 用户（使用量在其他地方管理）</li>
+</ul>
+<p>通过 <code>display.showUsage</code> 开关控制（默认：<code>true</code>）。</p>
+<h2 id="%E7%8E%AF%E5%A2%83%E8%A1%8C" tabindex="-1">环境行 <a class="header-anchor" href="#%E7%8E%AF%E5%A2%83%E8%A1%8C" aria-hidden="true">#</a></h2>
+<p>环境行显示活动的 Claude Code 配置来源计数：</p>
+<pre><code>3 CLAUDE.md | 2 rules | 4 MCPs | 1 hooks
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>指示器</th>
+<th>计数内容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>N CLAUDE.md</code></td>
+<td>会话中加载的 <a href="http://CLAUDE.md">CLAUDE.md</a> 文件数量</td>
+</tr>
+<tr>
+<td><code>N rules</code></td>
+<td>活动规则文件数量</td>
+</tr>
+<tr>
+<td><code>N MCPs</code></td>
+<td>已连接的 MCP 服务器数量</td>
+</tr>
+<tr>
+<td><code>N hooks</code></td>
+<td>已配置的 hooks 数量</td>
+</tr>
+</tbody>
+</table>
+<p>仅显示非零计数。当所有计数都为零时，整行隐藏。</p>
+<h3 id="%E7%8E%AF%E5%A2%83%E9%98%88%E5%80%BC" tabindex="-1">环境阈值 <a class="header-anchor" href="#%E7%8E%AF%E5%A2%83%E9%98%88%E5%80%BC" aria-hidden="true">#</a></h3>
+<p>控制环境行的显示时机：</p>
+<pre><code class="language-json">{ &quot;display&quot;: { &quot;environmentThreshold&quot;: 3 } }
+</code></pre>
+<p>仅当总计数（<a href="http://CLAUDE.md">CLAUDE.md</a> + rules + MCPs + hooks）达到阈值时才显示该行。默认为 <code>0</code>（只要有任何计数就显示）。</p>
+<p>通过 <code>display.showConfigCounts</code> 开关控制（展开布局默认：<code>false</code>，紧凑布局视情况而定）。</p>
+<h2 id="%E5%B7%A5%E5%85%B7%E8%A1%8C" tabindex="-1">工具行 <a class="header-anchor" href="#%E5%B7%A5%E5%85%B7%E8%A1%8C" aria-hidden="true">#</a></h2>
+<p>工具行显示 Claude 工作期间的实时工具调用情况。它同时显示当前正在运行的工具和最近完成的工具摘要。</p>
+<h3 id="%E8%BF%90%E8%A1%8C%E4%B8%AD%E7%9A%84%E5%B7%A5%E5%85%B7" tabindex="-1">运行中的工具 <a class="header-anchor" href="#%E8%BF%90%E8%A1%8C%E4%B8%AD%E7%9A%84%E5%B7%A5%E5%85%B7" aria-hidden="true">#</a></h3>
+<p>活动工具显示旋转指示器以及工具名称和目标：</p>
+<pre><code>◐ Edit: auth.ts | ◐ Read: config.json
+</code></pre>
+<p>同时最多显示 2 个运行中的工具。目标路径截断为 20 个字符，路径过长时显示文件名：</p>
+<pre><code>◐ Edit: .../deeply-nested-file.ts
+</code></pre>
+<h3 id="%E5%B7%B2%E5%AE%8C%E6%88%90%E7%9A%84%E5%B7%A5%E5%85%B7" tabindex="-1">已完成的工具 <a class="header-anchor" href="#%E5%B7%B2%E5%AE%8C%E6%88%90%E7%9A%84%E5%B7%A5%E5%85%B7" aria-hidden="true">#</a></h3>
+<p>已完成的工具显示对勾和调用次数，按频率排序：</p>
+<pre><code>✓ Read ×5 | ✓ Edit ×3 | ✓ Grep ×2 | ✓ Bash ×1
+</code></pre>
+<p>最多显示 4 个已完成工具摘要，优先显示使用频率最高的工具。</p>
+<h3 id="%E7%BB%84%E5%90%88%E6%98%BE%E7%A4%BA" tabindex="-1">组合显示 <a class="header-anchor" href="#%E7%BB%84%E5%90%88%E6%98%BE%E7%A4%BA" aria-hidden="true">#</a></h3>
+<p>当同时存在运行中和已完成的工具时：</p>
+<pre><code>◐ Edit: auth.ts | ✓ Read ×5 | ✓ Grep ×3 | ✓ Bash ×2
+</code></pre>
+<p>当没有工具被调用时，工具行隐藏。</p>
+<p>通过 <code>display.showTools</code> 开关控制（默认：<code>false</code>）。</p>
+<h2 id="agent-%E8%A1%8C" tabindex="-1">Agent 行 <a class="header-anchor" href="#agent-%E8%A1%8C" aria-hidden="true">#</a></h2>
+<p>Agent 行跟踪 Claude Code 在复杂任务中生成的子 Agent。它同时显示运行中和最近完成的 Agent。</p>
+<h3 id="%E8%BF%90%E8%A1%8C%E4%B8%AD%E7%9A%84-agent" tabindex="-1">运行中的 Agent <a class="header-anchor" href="#%E8%BF%90%E8%A1%8C%E4%B8%AD%E7%9A%84-agent" aria-hidden="true">#</a></h3>
+<p>活动 Agent 显示旋转指示器、Agent 类型、可选模型、描述和运行时间：</p>
+<pre><code>◐ explore [haiku]: Finding authentication code (2m 15s)
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>部分</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>◐</code></td>
+<td>黄色旋转指示器——Agent 正在运行</td>
+</tr>
+<tr>
+<td><code>explore</code></td>
+<td>Agent 类型（以品红色显示）</td>
+</tr>
+<tr>
+<td><code>[haiku]</code></td>
+<td>正在使用的模型（浅色显示，可选）</td>
+</tr>
+<tr>
+<td><code>Finding authentication...</code></td>
+<td>任务描述（截断为 40 个字符）</td>
+</tr>
+<tr>
+<td><code>(2m 15s)</code></td>
+<td>Agent 启动后的运行时间</td>
+</tr>
+</tbody>
+</table>
+<h3 id="%E5%B7%B2%E5%AE%8C%E6%88%90%E7%9A%84-agent" tabindex="-1">已完成的 Agent <a class="header-anchor" href="#%E5%B7%B2%E5%AE%8C%E6%88%90%E7%9A%84-agent" aria-hidden="true">#</a></h3>
+<p>最近完成的 Agent 显示对勾：</p>
+<pre><code>✓ explore [haiku]: Found 3 auth modules (45s)
+</code></pre>
+<p>最多显示 2 个最近完成的 Agent 以及运行中的 Agent，总共最多同时显示 3 个条目。</p>
+<h3 id="%E6%97%B6%E9%97%B4%E6%A0%BC%E5%BC%8F" tabindex="-1">时间格式 <a class="header-anchor" href="#%E6%97%B6%E9%97%B4%E6%A0%BC%E5%BC%8F" aria-hidden="true">#</a></h3>
+<p>运行时间以人类可读的格式显示：</p>
+<table>
+<thead>
+<tr>
+<th>时长</th>
+<th>显示</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>不到 1 秒</td>
+<td><code>&lt;1s</code></td>
+</tr>
+<tr>
+<td>不到 1 分钟</td>
+<td><code>Ns</code>（如 <code>45s</code>）</td>
+</tr>
+<tr>
+<td>1 分钟或更长</td>
+<td><code>Nm Ns</code>（如 <code>2m 15s</code>）</td>
+</tr>
+</tbody>
+</table>
+<p>当没有 Agent 处于活动状态时，Agent 行隐藏。</p>
+<p>通过 <code>display.showAgents</code> 开关控制（默认：<code>false</code>）。</p>
+<h2 id="%E5%BE%85%E5%8A%9E%E4%BA%8B%E9%A1%B9%E8%A1%8C" tabindex="-1">待办事项行 <a class="header-anchor" href="#%E5%BE%85%E5%8A%9E%E4%BA%8B%E9%A1%B9%E8%A1%8C" aria-hidden="true">#</a></h2>
+<p>待办事项行跟踪 Claude Code 使用内部待办列表管理多步骤工作时的任务完成情况。</p>
+<h3 id="%E8%BF%9B%E8%A1%8C%E4%B8%AD%E7%9A%84%E5%BE%85%E5%8A%9E%E4%BA%8B%E9%A1%B9" tabindex="-1">进行中的待办事项 <a class="header-anchor" href="#%E8%BF%9B%E8%A1%8C%E4%B8%AD%E7%9A%84%E5%BE%85%E5%8A%9E%E4%BA%8B%E9%A1%B9" aria-hidden="true">#</a></h3>
+<p>显示当前活动的待办事项及进度计数：</p>
+<pre><code>▸ Fix authentication bug (2/5)
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>部分</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>▸</code></td>
+<td>黄色指示器——此任务正在进行中</td>
+</tr>
+<tr>
+<td><code>Fix authentication...</code></td>
+<td>待办事项内容（截断为 50 个字符）</td>
+</tr>
+<tr>
+<td><code>(2/5)</code></td>
+<td>已完成 / 总待办数</td>
+</tr>
+</tbody>
+</table>
+<h3 id="%E5%85%A8%E9%83%A8%E5%AE%8C%E6%88%90" tabindex="-1">全部完成 <a class="header-anchor" href="#%E5%85%A8%E9%83%A8%E5%AE%8C%E6%88%90" aria-hidden="true">#</a></h3>
+<p>当所有待办事项都标记为完成时：</p>
+<pre><code>✓ All todos complete (5/5)
+</code></pre>
+<p>当没有待办事项或没有正在进行的事项（且并非全部完成）时，待办事项行隐藏。</p>
+<p>通过 <code>display.showTodos</code> 开关控制（默认：<code>false</code>）。</p>
+<h2 id="%E9%99%84%E5%8A%A0%E6%8C%87%E7%A4%BA%E5%99%A8" tabindex="-1">附加指示器 <a class="header-anchor" href="#%E9%99%84%E5%8A%A0%E6%8C%87%E7%A4%BA%E5%99%A8" aria-hidden="true">#</a></h2>
+<h3 id="%E4%BC%9A%E8%AF%9D%E6%97%B6%E9%95%BF" tabindex="-1">会话时长 <a class="header-anchor" href="#%E4%BC%9A%E8%AF%9D%E6%97%B6%E9%95%BF" aria-hidden="true">#</a></h3>
+<p>显示当前会话的运行时长：</p>
+<pre><code>⏱️ 5m
+</code></pre>
+<p>通过 <code>display.showDuration</code> 开关控制（默认：<code>false</code>）。</p>
+<h3 id="%E8%BE%93%E5%87%BA%E9%80%9F%E5%BA%A6" tabindex="-1">输出速度 <a class="header-anchor" href="#%E8%BE%93%E5%87%BA%E9%80%9F%E5%BA%A6" aria-hidden="true">#</a></h3>
+<p>显示 token 输出速度（每秒 token 数）：</p>
+<pre><code>out: 42.1 tok/s
+</code></pre>
+<p>通过 <code>display.showSpeed</code> 开关控制（默认：<code>false</code>）。</p>
+<h2 id="%E9%A2%9C%E8%89%B2%E8%87%AA%E5%AE%9A%E4%B9%89" tabindex="-1">颜色自定义 <a class="header-anchor" href="#%E9%A2%9C%E8%89%B2%E8%87%AA%E5%AE%9A%E4%B9%89" aria-hidden="true">#</a></h2>
+<p>所有使用颜色编码的元素都可以通过 <code>colors</code> 配置进行自定义：</p>
+<pre><code class="language-json">{
+  &quot;colors&quot;: {
+    &quot;context&quot;: &quot;cyan&quot;,
+    &quot;usage&quot;: &quot;cyan&quot;,
+    &quot;warning&quot;: &quot;yellow&quot;,
+    &quot;usageWarning&quot;: &quot;magenta&quot;,
+    &quot;critical&quot;: &quot;red&quot;
+  }
+}
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>颜色键</th>
+<th>应用对象</th>
+<th>默认值</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>context</code></td>
+<td>上下文进度条和百分比（正常范围）</td>
+<td><code>green</code></td>
+</tr>
+<tr>
+<td><code>usage</code></td>
+<td>使用量进度条和百分比（正常范围）</td>
+<td><code>brightBlue</code></td>
+</tr>
+<tr>
+<td><code>warning</code></td>
+<td>上下文 70-84%，使用量警告</td>
+<td><code>yellow</code></td>
+</tr>
+<tr>
+<td><code>usageWarning</code></td>
+<td>使用量 75-89%</td>
+<td><code>brightMagenta</code></td>
+</tr>
+<tr>
+<td><code>critical</code></td>
+<td>上下文 85%+，使用量 90%+，达到限制</td>
+<td><code>red</code></td>
+</tr>
+</tbody>
+</table>
+<p>可用颜色名称：<code>red</code>、<code>green</code>、<code>yellow</code>、<code>magenta</code>、<code>cyan</code>、<code>brightBlue</code>、<code>brightMagenta</code>。</p>
+<h2 id="%E5%85%83%E7%B4%A0%E9%A1%BA%E5%BA%8F" tabindex="-1">元素顺序 <a class="header-anchor" href="#%E5%85%83%E7%B4%A0%E9%A1%BA%E5%BA%8F" aria-hidden="true">#</a></h2>
+<p>在展开布局中，控制哪些元素显示以及显示顺序：</p>
+<pre><code class="language-json">{
+  &quot;elementOrder&quot;: [&quot;project&quot;, &quot;tools&quot;, &quot;context&quot;, &quot;usage&quot;, &quot;environment&quot;, &quot;agents&quot;, &quot;todos&quot;]
+}
+</code></pre>
+<p>从数组中省略某个元素会在展开模式中隐藏它。默认顺序为：</p>
+<ol>
+<li><code>project</code>——模型标识、项目路径、git 状态</li>
+<li><code>context</code>——上下文窗口进度条和百分比</li>
+<li><code>usage</code>——速率限制消耗</li>
+<li><code>environment</code>——配置来源计数</li>
+<li><code>tools</code>——工具调用活动</li>
+<li><code>agents</code>——子 Agent 跟踪</li>
+<li><code>todos</code>——待办事项进度</li>
+</ol>
+<h3 id="%E5%88%86%E9%9A%94%E7%BA%BF" tabindex="-1">分隔线 <a class="header-anchor" href="#%E5%88%86%E9%9A%94%E7%BA%BF" aria-hidden="true">#</a></h3>
+<p>在信息元素和活动元素之间添加可视分隔线：</p>
+<pre><code class="language-json">{ &quot;showSeparators&quot;: true }
+</code></pre>
+<pre><code>[Opus | Max] │ my-project git:(main)
+Context █████░░░░░ 45% │ Usage ██░░░░░░░░ 25%
+────────────────────────────────
+◐ Edit: auth.ts | ✓ Read ×3
+▸ Fix authentication bug (2/5)
+</code></pre>
+<h2 id="%E7%9B%B8%E5%85%B3%E4%B8%BB%E9%A2%98" tabindex="-1">相关主题 <a class="header-anchor" href="#%E7%9B%B8%E5%85%B3%E4%B8%BB%E9%A2%98" aria-hidden="true">#</a></h2>
+<ul>
+<li><a href="configuration.html">配置</a>——所有配置选项的完整参考</li>
+<li><a href="getting-started.html">快速开始</a>——安装和设置 Claude HUD</li>
+<li><a href="troubleshooting.html">故障排除</a>——修复显示问题和缺失元素</li>
+<li><a href="architecture.html">架构</a>——渲染管道的内部工作原理</li>
+</ul>
+</main>
+    <nav data-ds="toc"><div class="toc-title">本页目录</div><ul><li><a href="#%E5%B8%83%E5%B1%80%E6%A8%A1%E5%BC%8F">布局模式</a></li><ul><li><a href="#%E5%B1%95%E5%BC%80%E5%B8%83%E5%B1%80%EF%BC%88%E9%BB%98%E8%AE%A4%EF%BC%89">展开布局（默认）</a></li><li><a href="#%E7%B4%A7%E5%87%91%E5%B8%83%E5%B1%80">紧凑布局</a></li></ul><li><a href="#%E9%A1%B9%E7%9B%AE%E8%A1%8C">项目行</a></li><ul><li><a href="#%E6%A8%A1%E5%9E%8B%E6%A0%87%E8%AF%86">模型标识</a></li><li><a href="#%E9%A1%B9%E7%9B%AE%E8%B7%AF%E5%BE%84">项目路径</a></li><li><a href="#git-%E7%8A%B6%E6%80%81">Git 状态</a></li><li><a href="#%E4%BC%9A%E8%AF%9D%E5%90%8D%E7%A7%B0">会话名称</a></li></ul><li><a href="#%E4%B8%8A%E4%B8%8B%E6%96%87%E8%A1%8C">上下文行</a></li><ul><li><a href="#%E4%B8%8A%E4%B8%8B%E6%96%87%E8%BF%9B%E5%BA%A6%E6%9D%A1">上下文进度条</a></li><li><a href="#%E4%B8%8A%E4%B8%8B%E6%96%87%E6%95%B0%E5%80%BC%E6%98%BE%E7%A4%BA">上下文数值显示</a></li><li><a href="#token-%E6%98%8E%E7%BB%86">Token 明细</a></li><li><a href="#%E8%87%AA%E5%8A%A8%E5%8E%8B%E7%BC%A9%E7%BC%93%E5%86%B2%E5%8C%BA">自动压缩缓冲区</a></li></ul><li><a href="#%E4%BD%BF%E7%94%A8%E9%87%8F%E8%A1%8C">使用量行</a></li><ul><li><a href="#5-%E5%B0%8F%E6%97%B6%E7%AA%97%E5%8F%A3">5 小时窗口</a></li><li><a href="#7-%E5%A4%A9%E7%AA%97%E5%8F%A3">7 天窗口</a></li><li><a href="#%E4%BD%BF%E7%94%A8%E9%87%8F%E9%A2%9C%E8%89%B2%E6%AF%94%E4%BE%8B">使用量颜色比例</a></li><li><a href="#%E4%BD%BF%E7%94%A8%E9%87%8F%E9%98%88%E5%80%BC">使用量阈值</a></li><li><a href="#%E8%BE%BE%E5%88%B0%E9%99%90%E5%88%B6%E7%8A%B6%E6%80%81">达到限制状态</a></li><li><a href="#%E7%BA%AF%E6%96%87%E6%9C%AC%E6%A8%A1%E5%BC%8F">纯文本模式</a></li><li><a href="#%E8%B0%81%E5%8F%AF%E4%BB%A5%E7%9C%8B%E5%88%B0%E4%BD%BF%E7%94%A8%E9%87%8F">谁可以看到使用量</a></li></ul><li><a href="#%E7%8E%AF%E5%A2%83%E8%A1%8C">环境行</a></li><ul><li><a href="#%E7%8E%AF%E5%A2%83%E9%98%88%E5%80%BC">环境阈值</a></li></ul><li><a href="#%E5%B7%A5%E5%85%B7%E8%A1%8C">工具行</a></li><ul><li><a href="#%E8%BF%90%E8%A1%8C%E4%B8%AD%E7%9A%84%E5%B7%A5%E5%85%B7">运行中的工具</a></li><li><a href="#%E5%B7%B2%E5%AE%8C%E6%88%90%E7%9A%84%E5%B7%A5%E5%85%B7">已完成的工具</a></li><li><a href="#%E7%BB%84%E5%90%88%E6%98%BE%E7%A4%BA">组合显示</a></li></ul><li><a href="#agent-%E8%A1%8C">Agent 行</a></li><ul><li><a href="#%E8%BF%90%E8%A1%8C%E4%B8%AD%E7%9A%84-agent">运行中的 Agent</a></li><li><a href="#%E5%B7%B2%E5%AE%8C%E6%88%90%E7%9A%84-agent">已完成的 Agent</a></li><li><a href="#%E6%97%B6%E9%97%B4%E6%A0%BC%E5%BC%8F">时间格式</a></li></ul><li><a href="#%E5%BE%85%E5%8A%9E%E4%BA%8B%E9%A1%B9%E8%A1%8C">待办事项行</a></li><ul><li><a href="#%E8%BF%9B%E8%A1%8C%E4%B8%AD%E7%9A%84%E5%BE%85%E5%8A%9E%E4%BA%8B%E9%A1%B9">进行中的待办事项</a></li><li><a href="#%E5%85%A8%E9%83%A8%E5%AE%8C%E6%88%90">全部完成</a></li></ul><li><a href="#%E9%99%84%E5%8A%A0%E6%8C%87%E7%A4%BA%E5%99%A8">附加指示器</a></li><ul><li><a href="#%E4%BC%9A%E8%AF%9D%E6%97%B6%E9%95%BF">会话时长</a></li><li><a href="#%E8%BE%93%E5%87%BA%E9%80%9F%E5%BA%A6">输出速度</a></li></ul><li><a href="#%E9%A2%9C%E8%89%B2%E8%87%AA%E5%AE%9A%E4%B9%89">颜色自定义</a></li><li><a href="#%E5%85%83%E7%B4%A0%E9%A1%BA%E5%BA%8F">元素顺序</a></li><ul><li><a href="#%E5%88%86%E9%9A%94%E7%BA%BF">分隔线</a></li></ul><li><a href="#%E7%9B%B8%E5%85%B3%E4%B8%BB%E9%A2%98">相关主题</a></li></ul></nav>
+  </div>
+  <footer data-ds="footer">
+    <a href="https://docsmith.aigne.io/" target="_blank" rel="noopener noreferrer" class="docsmith-badge">
+      <svg class="docsmith-badge-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+        <polyline points="14 2 14 8 20 8"></polyline>
+        <line x1="16" y1="13" x2="8" y2="13"></line>
+        <line x1="16" y1="17" x2="8" y2="17"></line>
+        <polyline points="10 9 9 9 8 9"></polyline>
+      </svg>
+      <span>Built with <strong>AIGNE DocSmith</strong></span>
+    </a>
+  </footer>
+
+  <script>document.addEventListener('DOMContentLoaded', function() {
+    if (typeof hljs !== 'undefined') hljs.highlightAll();
+  });</script>
+</body>
+</html>
