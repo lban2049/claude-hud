@@ -1,0 +1,15 @@
+workspaceVersion: '1.0'
+createdAt: '2026-03-18T10:00:00Z'
+projectName: claude-hud
+projectDesc: A Claude Code plugin that shows real-time context usage, active tools, running agents, and todo progress as a statusline HUD.
+locale: en
+projectLogo: ''
+translateLanguages:
+  - zh
+sources:
+  - type: local-path
+    path: ../../
+    url: https://github.com/jarrodwatts/claude-hud
+    branch: main
+    commit: ''
+appUrl: https://bhqaxxrurk42wcdvcmk57dj5aawvupcpdtxrxazzlrq.docsmith.aigne.io/

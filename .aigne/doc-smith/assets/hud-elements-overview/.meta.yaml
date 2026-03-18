@@ -1,0 +1,9 @@
+kind: image
+generation:
+  prompt: "Claude HUD displaying all elements in expanded layout including project info, context bar, usage limits, tools, agents, and todos"
+  model: google/gemini-3-pro-image-preview
+  createdAt: "2026-03-18T10:30:00Z"
+documents:
+  - path: /hud-elements
+languages:
+  - en

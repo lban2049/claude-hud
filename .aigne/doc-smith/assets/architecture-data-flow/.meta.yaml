@@ -1,0 +1,9 @@
+kind: image
+generation:
+  prompt: "Data flow diagram showing the five-stage pipeline: stdin JSON from Claude Code flows into the plugin, which parses the transcript JSONL file, collects config and environment data, renders HUD elements, and outputs ANSI lines to stdout"
+  model: google/gemini-3-pro-image-preview
+  createdAt: "2026-03-18T10:00:00Z"
+documents:
+  - path: /architecture
+languages:
+  - en

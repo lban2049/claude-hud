@@ -1,0 +1,34 @@
+project:
+  title: "Claude HUD"
+  description: "Real-time statusline HUD for Claude Code — context usage, active tools, running agents, and todo progress"
+documents:
+  - title: "Overview"
+    description: "What Claude HUD is, what it shows, and why it matters for your Claude Code workflow"
+    path: "/overview"
+    sourcePaths: ["README.md", "CLAUDE.README.md"]
+    icon: "lucide:monitor"
+  - title: "Getting Started"
+    description: "Install Claude HUD and get it running in under a minute"
+    path: "/getting-started"
+    sourcePaths: ["README.md", "CLAUDE.README.md"]
+    icon: "lucide:rocket"
+  - title: "Configuration"
+    description: "Customize your HUD with presets, display toggles, colors, and layout options"
+    path: "/configuration"
+    sourcePaths: ["src/config.ts", "README.md"]
+    icon: "lucide:settings"
+  - title: "HUD Elements"
+    description: "Understand every line, bar, and indicator in your HUD display"
+    path: "/hud-elements"
+    sourcePaths: ["src/render/session-line.ts", "src/render/tools-line.ts", "src/render/agents-line.ts", "src/render/todos-line.ts"]
+    icon: "lucide:layout-dashboard"
+  - title: "Architecture"
+    description: "How Claude HUD works under the hood — data flow, rendering pipeline, and extension points"
+    path: "/architecture"
+    sourcePaths: ["src/index.ts", "src/stdin.ts", "src/transcript.ts", "CLAUDE.README.md"]
+    icon: "lucide:git-branch"
+  - title: "Troubleshooting"
+    description: "Fix common issues with installation, display, configuration, and platform-specific quirks"
+    path: "/troubleshooting"
+    sourcePaths: ["README.md", "CLAUDE.README.md"]
+    icon: "lucide:wrench"
